@@ -1,5 +1,8 @@
 name: JOSS draft
-on: [push]
+on: 
+  push: 
+    - paper/**
+    - .github/workflows/paper.yaml
 
 jobs:
   paper:
