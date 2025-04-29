@@ -18,14 +18,12 @@ Usage:
 """
 
 from bahamas.method import setting_hmc
-from bahamas.method import setting_nessai
 from bahamas.method import setting_inference
 
 import numpy as np
 import jax
 import numpyro
 from numpyro.infer import MCMC, NUTS
-from nessai.flowsampler import FlowSampler
 import yaml
 import argparse
 import matplotlib.pyplot as plt
@@ -102,24 +100,6 @@ class Method:
             kernel = NUTS(self.log_like, adapt_mass_matrix=self.config['inference']['adapt_matrix'])
             self.method = MCMC(kernel, **self._get_mcmc_params())
 
-        elif self.sampler == 'nested':
-
-            sampler_opts = self.config['inference']
-            # To get checkpointing to work
-            if 'flow_config' not in sampler_opts:
-                sampler_opts['flow_config'] = None
-            if 'checkpointing' not in sampler_opts:
-                sampler_opts['checkpointing'] = True
-            if 'checkpoint_on_training' not in sampler_opts:
-                sampler_opts['checkpoint_on_training'] = True
-            
-            if 'max_threads' in sampler_opts:
-                nthreads = sampler_opts['max_threads']
-
-            model = setting_nessai.nessai_model(self.log_like, **self.kwargs)
-            name = get_first_part(self.config['inference']['file_post'])
-            self.method = FlowSampler(model, resume=False, output=name, **sampler_opts,)
-
 
     def _get_mcmc_params(self):
         """
@@ -144,7 +124,6 @@ class Method:
         - np.ndarray: Posterior samples.
         """
 
-
         if self.sampler in ['NUTS']:
             self.method.run(jax.random.PRNGKey(100), **self.kwargs)
             self.posterior = self.method.get_samples()
@@ -162,12 +141,9 @@ class Method:
 
             return self.result
    
-
-        elif self.sampler == 'nested':
-            self.method.run()
-            self.posterior = self.method.posterior_samples
-            self.result = np.column_stack([self.posterior[key] for key in self.posterior.dtype.names])
-            return self.result
+        else:
+            logger.error(f"Sampler '{self.sampler}' is not supported.")
+            raise ValueError(f"Sampler '{self.sampler}' is not supported.")
 
     def get_likelihood(self):
         """
@@ -263,23 +239,3 @@ class BayesianInference:
         self.result = self.run_inference()
         self.save_results()
 
-
-if __name__ == '__main__':
-    """
-    Main function to run the Bayesian inference process from the command line.
-    """
-    # Argument parsing for command-line interface
-    parser = argparse.ArgumentParser(description='Bayesian Inference for LISA Data')
-    parser.add_argument('--config', type=str, required=True, help='YAML config file')
-    parser.add_argument('--sources', type=str, required=True, help='YAML sources file')
-    args = parser.parse_args()
-
-    logger.info(f"Running inference with config: {args.config} and sources: {args.sources}")
-    logger.info("JAX devices available: %s", jax.devices())
-    logger.info("Running inference...")
-   
-    inference = BayesianInference(args.config, args.sources)
-    inference.run()
-
-    logger.info("Inference completed successfully.")
-    logger.info("Results saved to: %s", inference.config['inference']["file_post"])

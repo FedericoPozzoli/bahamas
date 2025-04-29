@@ -14,8 +14,6 @@ Contents
    :caption: Sections:
 
    modules
-   usage
-   api
    utilities
 
 

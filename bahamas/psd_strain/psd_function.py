@@ -48,60 +48,13 @@ def Omega_vacuum(freqs, par):
     Avac = par['Avac']
     slope = par['slope']
 
-    f0 = 1 #10**-3
+    f0 = 1 
     Omega = 10**Avac*(freqs/ f0)**slope
     S_h = Omega * (3*H02)/ (4*jnp.pi**2*freqs**3)
 
     return S_h
 
-@jax.jit
-def Omega_Edd(freqs, par):
-    """
-    Eddington accretion model for gravitational wave signal.
-    Args:
-        freqs (array): Frequency array.
-        par (dict): Parameters for the model.
-    Returns:
-        array: Power spectral density.
-    """
-    #Am = par['Am']
-    Avac= par['Avac']
-    fedd = par['fedd']
 
-    coef = -11.611197718018854 
-    Omega =  10**Avac * freqs**(2./3) / (1 + (10**coef)*freqs**(-8./3)*10**fedd) 
-
-    S_h = Omega * (3*H02) / (4*jnp.pi**2*freqs**3)
-
-    return S_h
-
-
-@jax.jit
-def Omega_DF_bump(freqs, par):
-    """
-    Dynamical friction model for gravitational wave signal with a bump.
-    Args:
-        freqs (array): Frequency array.
-        par (dict): Parameters for the model.   
-    Returns:
-        array: Power spectral density.
-    """
-    A_m = -13.564594467605877
-    Avac = par['Avac']
-    rho = par['rho']
-
-    numerator = 10**Avac * freqs**(2./3)
-    denominator = (1 - 10**rho * 10**A_m * freqs**(-11./3)*jnp.log(freqs)) 
-    log_f_peak = -3.4059 + 0.2623 * rho 
-    amplitude = 1.2034 + (-0.0262 * rho)
-    sigma = 0.2217
-    Gauss = amplitude * jnp.exp(-((jnp.log10(freqs) - log_f_peak)**2) / (2 * sigma**2))
-    Gauss_correction = 1 + Gauss
-    omega =  numerator / denominator / Gauss_correction
-
-    S_h = omega * (3*H02) / (4*jnp.pi**2*freqs**3) 
-    return S_h
-   
 @jax.jit
 def Omega_extra_foreground(freqs, par):    
     """
@@ -217,7 +170,7 @@ def galactic_foreground_time(freqs, par, injected=False, t1=0, t2=0, tdi=0):
         s1 = par['s1']
         s2 = par['s2']
 
-    amp_time = env.envelopes_gaussian(
+    amp_time = env.average_envelopes_gaussian(
         lat, long, s1, s2, psi, t1, t2, 
         LISA_Orbital_Freq=1 / year, alpha0=0., beta0=0., tdi=tdi
     )
@@ -315,17 +268,7 @@ def model_psd(freqs, sources, response, injected=False, tdi=0, **kwargs):
     # Loop through each source and compute its contribution to the PSD
     for source_name in sources.keys():
 
-        if source_name == 'dynamical_friction':
-            psd += response * Omega_DF_bump(freqs, sources[source_name])
-            if injected:
-                true_psd.append(response * Omega_DF_bump(freqs, sources[source_name]))
-
-        elif source_name == 'eddington_accretion':
-            psd += response * Omega_Edd(freqs, sources[source_name])
-            if injected:
-                true_psd.append(response * Omega_Edd(freqs, sources[source_name]))
-
-        elif source_name == 'egp':
+        if source_name == 'egp':
             matrix = kwargs.get('matrix_egp')
             psd += response * egp.egp(freqs, sources[source_name], matrix)
 

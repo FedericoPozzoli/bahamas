@@ -33,7 +33,7 @@ pip install bahamas
 Or install from source:
 
 ```bash
-git clone https://github.com/yourusername/bahamas.git
+git clone https://github.com/fede121/bahamas.git
 cd bahamas
 pip install .
 ```
@@ -44,4 +44,4 @@ This project is open-source and available under the [Apache License 2.0](https:/
 
 ---
 
-For more information, examples, or to contribute, please visit the [GitHub repository](https://github.com/yourusername/bahamas).
+For more information, examples, or to contribute, please visit the [GitHub repository](https://github.com/fede121/bahamas.git).

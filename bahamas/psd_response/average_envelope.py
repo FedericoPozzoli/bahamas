@@ -13,7 +13,7 @@ from jax import lax
 import jax
 jax.config.update('jax_enable_x64', True)
 
-def envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigma2, Psi, t1, t2, LISA_Orbital_Freq, alpha0 = 0., beta0 = 0., tdi = 0):
+def average_envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigma2, Psi, t1, t2, LISA_Orbital_Freq, alpha0 = 0., beta0 = 0., tdi = 0):
     """
     Returns the envelopes of the A and E signals for sources centered at the given sky position,
     averaged over inclination and polarization, with some gaussian distribution with given

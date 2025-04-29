@@ -6,8 +6,6 @@ rotated with respect to the latitude and longitude.
 The function `envelopes_gaussian` computes the envelopes based on the provided parameters.
 """
 import numpy as np
-import pathlib
-import matplotlib.pylab as pl
 
 
 def envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigma2, Psi, LISA_Orbital_Freq, t, alpha0 = 0., beta0 = 0.):

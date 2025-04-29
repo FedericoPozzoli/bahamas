@@ -6,6 +6,7 @@ Model components for the BAHAMAS package:
 """
 
 from .average_envelope import *
+from .modulation import *
 from .orbits import *
 from .response import *
 

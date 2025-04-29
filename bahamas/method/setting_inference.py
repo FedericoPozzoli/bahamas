@@ -19,7 +19,6 @@ Dependencies:
 """
 from bahamas.psd_strain import egp
 from bahamas.method import setting_hmc 
-from bahamas.method import setting_nessai
 
 import numpy as np
 import h5py
@@ -120,7 +119,7 @@ class InferenceMethod:
             t1, t2, dof = self._calculate_dof()
 
         elif mode == 'Gamma':
-            if sampler in ['BarkerHM', 'NUTS', 'SVI', 'DiscreteHMCGibbs']:
+            if sampler in ['NUTS']:
                 log_like = setting_hmc.gamma_lik
                 if 'beta' in self.config['inference']:
                     log_like = setting_hmc.beta_scaled_log_likelihood(log_like, beta=self.config['inference']['beta'])

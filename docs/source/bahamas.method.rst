@@ -16,11 +16,3 @@ bahamas.method.setting\_inference
    :members:
    :undoc-members:
    :show-inheritance:
-
-bahamas.method.setting\_nessai 
--------------------------------------
-
-.. automodule:: bahamas.method.setting_nessai
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -2,32 +2,31 @@
 title: 'Gala: A Python package for galactic dynamics'
 tags:
   - Python
-  - astronomy
-  - dynamics
-  - galactic dynamics
-  - milky way
+  - astrophysics
+  - gravitational waves
+  - stochastic signal
 authors:
-  - name: Adrian M. Price-Whelan
-    orcid: 0000-0000-0000-0000
+  - name: Federico Pozzoli
+    orcid: 0009-0009-6265-584X
+    corresponding: true # (This is how to denote the corresponding author)
     equal-contrib: true
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
-  - name: Author Without ORCID
+    affiliation: 1 # (Multiple affiliations must be quoted)
+  - name: Riccardo Buscicchio
     equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
     affiliation: 2
-  - name: Author with no affiliation
-    corresponding: true # (This is how to denote the corresponding author)
+  - name: Antoine Klein
     affiliation: 3
-  - given-names: Ludwig
-    dropping-particle: van
-    surname: Beethoven
-    affiliation: 3
+    equal-contrib: true
+  - name: Daniele Chirico
+    affiliation: 2
+    equal-contrib: true
 affiliations:
- - name: Lyman Spitzer, Jr. Fellow, Princeton University, United States
+ - name: Università degli studi dell'Insubria Italy
    index: 1
    ror: 00hx57361
- - name: Institution Name, Country
+ - name: Università degli studi Milano-Bicocca, Italy
    index: 2
- - name: Independent Researcher, Country
+ - name: Universitity of Birmingham
    index: 3
 date: 13 August 2017
 bibliography: paper.bib
@@ -119,66 +118,6 @@ Oh, and support from Kathryn Johnston during the genesis of this project.
 
 # References
 
-Example paper.bib file:
 
-@article{Pearson:2017,
-  	url = {http://adsabs.harvard.edu/abs/2017arXiv170304627P},
-  	Archiveprefix = {arXiv},
-  	Author = {{Pearson}, S. and {Price-Whelan}, A.~M. and {Johnston}, K.~V.},
-  	Eprint = {1703.04627},
-  	Journal = {ArXiv e-prints},
-  	Keywords = {Astrophysics - Astrophysics of Galaxies},
-  	Month = mar,
-  	Title = {{Gaps in Globular Cluster Streams: Pal 5 and the Galactic Bar}},
-  	Year = 2017
-}
-
-@book{Binney:2008,
-  	url = {http://adsabs.harvard.edu/abs/2008gady.book.....B},
-  	Author = {{Binney}, J. and {Tremaine}, S.},
-  	Booktitle = {Galactic Dynamics: Second Edition, by James Binney and Scott Tremaine.~ISBN 978-0-691-13026-2 (HB).~Published by Princeton University Press, Princeton, NJ USA, 2008.},
-  	Publisher = {Princeton University Press},
-  	Title = {{Galactic Dynamics: Second Edition}},
-  	Year = 2008
-}
-
-@article{gaia,
-    author = {{Gaia Collaboration}},
-    title = "{The Gaia mission}",
-    journal = {Astronomy and Astrophysics},
-    archivePrefix = "arXiv",
-    eprint = {1609.04153},
-    primaryClass = "astro-ph.IM",
-    keywords = {space vehicles: instruments, Galaxy: structure, astrometry, parallaxes, proper motions, telescopes},
-    year = 2016,
-    month = nov,
-    volume = 595,
-    doi = {10.1051/0004-6361/201629272},
-    url = {http://adsabs.harvard.edu/abs/2016A%26A...595A...1G},
-}
-
-@article{astropy,
-    author = {{Astropy Collaboration}},
-    title = "{Astropy: A community Python package for astronomy}",
-    journal = {Astronomy and Astrophysics},
-    archivePrefix = "arXiv",
-    eprint = {1307.6212},
-    primaryClass = "astro-ph.IM",
-    keywords = {methods: data analysis, methods: miscellaneous, virtual observatory tools},
-    year = 2013,
-    month = oct,
-    volume = 558,
-    doi = {10.1051/0004-6361/201322068},
-    url = {http://adsabs.harvard.edu/abs/2013A%26A...558A..33A}
-}
-
-@misc{fidgit,
-  author = {A. M. Smith and K. Thaney and M. Hahnel},
-  title = {Fidgit: An ungodly union of GitHub and Figshare},
-  year = {2020},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  url = {https://github.com/arfon/fidgit}
-}
 
 

@@ -12,6 +12,14 @@ bahamas.psd\_response.average\_envelope
    :undoc-members:
    :show-inheritance:
 
+bahamas.psd\_response.modulation
+---------------------------------------
+
+.. automodule:: bahamas.psd_response.modulation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 bahamas.psd\_response.orbits
 ----------------------------
 
