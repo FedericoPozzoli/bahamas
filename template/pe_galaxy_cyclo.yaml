@@ -1,0 +1,46 @@
+# This is a template for the list of sources to provide to the bahamas-inference
+# accounting for galacatic foreground modulated in time.
+sources:
+  galactic_DWD_time:
+    - name: "alpha"
+      bounds:  [1., 2.]
+      injected: 1.8
+    - name: "amp"
+      bounds: [-47, -40]
+      injected: -43.94309514866353 
+    - name: "fknee"
+      bounds: [-4, -1.8] 
+      injected: -2.595679532778269 
+    - name: "fr1"
+      bounds: [-4, -1.8] 
+      injected: -2.856
+    - name: "fr2"
+      bounds: [-4, -1.8]
+      injected: -3.487854923626168
+    - name: "lat"
+      bounds: [-1, 0.1] 
+      injected: -0.09664565   
+    - name: "long"
+      bounds: [-2., -1.]
+      injected: -1.6259238
+    - name: "psi"
+      bounds: [-1.5, -0.5] 
+      injected: -0.9900146151015816 
+    - name: "s1"
+      bounds: [0.0001, 0.1]
+      injected: 0.04156049812924856 
+    - name: "s2"
+      bounds: [0.1, 0.3]
+      injected: 0.13842963137295858
+  instr_noise:
+    - name: "A"
+      bounds: [1, 5]
+      injected: 3
+    - name: "P"
+      bounds: [10, 20]
+      injected: 15
+
+ 
+   
+    
+

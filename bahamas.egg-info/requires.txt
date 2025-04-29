@@ -1,0 +1,9 @@
+numpy
+jax
+jaxlib
+numpyro
+scipy
+matplotlib
+h5py
+pyyaml
+pandas

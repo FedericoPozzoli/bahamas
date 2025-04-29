@@ -1,0 +1,11 @@
+/* Set default favicon */
+link[rel="icon"] {
+    content: url("_static/favicon_dark.png");
+}
+
+/* Switch to dark favicon when user prefers dark mode */
+@media (prefers-color-scheme: dark) {
+    link[rel="icon"] {
+        content: url("_static/favicon_dark.png");
+    }
+}

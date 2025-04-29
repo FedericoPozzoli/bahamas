@@ -1,0 +1,12 @@
+astropy==6.0.1
+corner==2.2.1
+h5py==3.2.1
+healpy==1.16.1
+jax==0.4.30
+matplotlib==3.8.4
+nessai==0.7.0
+numpy
+numpyro==0.15.3
+PyYAML==6.0.2
+ruamel.yaml==0.18.10
+scipy==1.13.1

@@ -1,0 +1,4 @@
+[console_scripts]
+bahamas-data = bahamas.bahamas_data:main
+bahamas-inference = bahamas.bahamas_inference:main
+
