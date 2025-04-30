@@ -47,7 +47,9 @@ In this article, we introduce `bahamas`, a tool designed to address some of thes
 
 The main idea behind the global fit algorithm is to use a Blocked Gibbs sampling technique to jointly analyze different gravitational wave (GW) sources, including stochastic backgrounds, instrumental noise, and the galactic foreground. LISA is expected to sample data at $\sim 10,\mathrm{s}$, with a nominal mission duration of four years. This results in an extremely large dataset for a full-band analysis of the stochastic components. Consequently, computational cost becomes a significant concern for the stochastic sector. Traditional sampling techniques, such as nested sampling or standard Markov Chain Monte Carlo (MCMC), might become prohibitively slow for this task. To overcome this issue, `bahamas` leverages the No-U-Turn Sampler (NUTS) [@Hoffman:2011], an adaptive variant of Hamiltonian MCMC, which significantly improves sampling efficiency.
 
-Another issue in the galactic foregorund reconstruction is its non-stationary nature. The distribution in the sky of the unresolved galactic WDs is higly unisotropic. Coupling the anisotropy with the annual motion of LISA and the time-dependent antenna pattern result in a cyclostationary process: a stochastic process with periodic properties in time. 
+Another issue in the reconstruction of the Galactic foreground is its non-stationary nature. The sky distribution of unresolved Galactic white dwarfs is highly anisotropic. Coupling this anisotropy with LISA’s annual motion and its time-dependent antenna pattern results in a cyclostationary process—a stochastic process with periodic time-dependent properties. In the time domain, the Galactic noise appears modulated. For this reason, even when using chunked data to mitigate non-stationarity, the spectral amplitude may vary inconsistently between chunks. 
+There are currently no global fit pipelines accounting for this feature. `bahamas` levearege a motivated model for the galactic modulation, develop in [@Buscicchio:2024]. 
+
 
 # Software Description 
 
