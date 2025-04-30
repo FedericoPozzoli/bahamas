@@ -40,7 +40,12 @@ bibliography: paper.bib
 # Summary
 
 Laser Interferometer Spce Antenna (LISA) is a forthocoming space-based mission to detect 
-gravitational waves of different astrophysical and cosmological nature in the milli-hertz band. 
+gravitational waves (GW) of different astrophysical and cosmological nature in the milli-hertz band. 
+LISA is expected to observe simulatenously in its band more than thousands of GW sources, while at the same time
+the unresolved population of binaries will overlap inchorently forming stochastic signals of different nature.
+*The global fit* [@katz:2025] try to fit all of the resolvable and unresolvable sources all together. This consist in an extreme challange 
+due to different reasons. 
+
 
 # Statement of need
 
