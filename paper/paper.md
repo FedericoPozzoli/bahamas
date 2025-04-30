@@ -39,32 +39,23 @@ bibliography: paper.bib
 
 # Summary
 
-Laser Interferometer Spce Antenna (LISA) is a forthocoming space-based mission to detect 
-gravitational waves (GW) of different astrophysical and cosmological nature in the milli-hertz band. 
-LISA is expected to observe simulatenously in its band more than thousands of GW sources, while at the same time
-the unresolved population of binaries will overlap inchorently forming stochastic signals of different nature.
-*The global fit* [@Katz:2025] try to fit all of the resolvable and unresolvable sources all together. This consist in an extreme challange 
-due to different reasons. 
+The Laser Interferometer Space Antenna (LISA) [@LISA:2018] is an upcoming space-based mission designed to detect gravitational waves (GWs) of both astrophysical and cosmological origin in the milli-hertz band. LISA is expected to observe thousands of white dwarf binaries within the Milky Way simultaneously, while an unresolved population of such binaries will overlap incoherently, forming the so-called galactic foreground.
+One of the central challenges of the so-called *global fit* [@Katz:2025] is to jointly model both the resolvable and unresolvable white dwarf populations. 
+In this article, we present `bahamas`, a Python package for Bayesian inference of the galactic foreground and stochastic background towards a global fit perspective. it leverages Hamiltonian Markov Chain Montecarlo (HMCMC) @
 
 
 # Statement of need
 
-`bahamas` 
+# Software Description 
 
-# Citations
+# Illustrative Example
 
-Citations to entries in paper.bib should be in
-[rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
+# Quality Control
 
-If you want to cite a software repository URL (e.g. something on GitHub without a preferred
-citation) then you can do it with the example BibTeX entry below for @fidgit.
+# Performance
 
 # Acknowledgements
 
-We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong
-Oh, and support from Kathryn Johnston during the genesis of this project.
+bla bla
 
-
-
-
+# References
