@@ -13,7 +13,6 @@ Classes:
 Dependencies:
     - egp (custom module)
     - method (custom module)
-    - method_nessai (custom module)
     - NumPy
     - h5py
 """
@@ -114,8 +113,6 @@ class InferenceMethod:
                 log_like = setting_hmc.whittle_lik
                 if 'beta' in self.config['inference']:
                     log_like = setting_hmc.beta_scaled_log_likelihood(log_like, beta=self.config['inference']['beta'])
-            else:
-                log_like = setting_nessai.whittle_lik
             t1, t2, dof = self._calculate_dof()
 
         elif mode == 'Gamma':
@@ -123,8 +120,6 @@ class InferenceMethod:
                 log_like = setting_hmc.gamma_lik
                 if 'beta' in self.config['inference']:
                     log_like = setting_hmc.beta_scaled_log_likelihood(log_like, beta=self.config['inference']['beta'])
-            else:
-                log_like = setting_nessai.gamma_lik
             t1, t2, dof = self._calculate_dof(gamma=True)
 
         else:

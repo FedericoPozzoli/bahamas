@@ -2,7 +2,8 @@ name: Tests
 on: 
   push: 
     paths:
-      - .github/workflows/testing.yaml
+      - .github/workflows/testing.yml
+      - tests/**
 
 jobs:
   build:
@@ -23,4 +24,4 @@ jobs:
           python -m pip install --upgrade pip
           pip install .
       - name: Run tests
-        run: python -m pytest ./test
+        run: python -m pytest tests

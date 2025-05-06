@@ -56,7 +56,7 @@ The package includes two main command-line interfaces:
 
   - `run_data.py`: Data simulation and preprocessing
 
-  - `run_pe.py`: Parameter estimation using Hamiltonian Monte Carlo
+  - `run_pe.py`: Parameter estimation and minimal diagnostics
 
 Both scripts require two input files:
 
