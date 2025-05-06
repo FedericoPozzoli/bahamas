@@ -50,11 +50,10 @@ The main idea behind the global fit algorithm is to use a Blocked Gibbs sampling
 Another issue in the reconstruction of the Galactic foreground is its non-stationary nature. The sky distribution of unresolved Galactic WDs is highly anisotropic. Coupling this anisotropy with LISA’s annual motion and its time-dependent antenna pattern results in a cyclostationary process—a stochastic process with periodic time-dependent properties. In the time domain, the Galactic noise appears modulated. For this reason, even when using chunked data to mitigate non-stationarity, the spectral amplitude may vary inconsistently between chunks. 
 There are currently no global fit pipelines accounting for this feature. In `bahamas`, we adopt a time-frequency approach that incorporates the modulation proposed in [@Buscicchio:2024] to model the evolution of the time-dependent spectral amplitude. The key advantage is that we employ a parameterizable modulation that is both analytical and easily evaluable. Specifically, it decomposes the squared time-evolving, sky-location-dependent antenna pattern (since we aim to track the spectral amplitude evolution) as a sum of sinusoids, and computes the overall envelope using the characteristic function, assuming a Gaussian distribution for the WDs in the sky.
 
-The algorithm also allows for the inclusion of a stationary, isotropic, and Gaussian stochastic process (e.g., a signal characterized by a power-law power spectral density), enabling the evaluation of the impact of multiple overlapping sources.
+The algorithm also allows for the inclusion of stationary, isotropic, and Gaussian stochastic process (e.g., a signal characterized by a power-law power spectral density), enabling the evaluation of the impact of multiple overlapping sources.
 
 
 # Software Description 
-
 The package includes two main command-line interfaces:
 
   - `run_data.py`: Data simulation and preprocessing
@@ -66,6 +65,8 @@ Both scripts require two input files:
   - `--config config.yaml`: Specifies the simulation and inference settings, including data injection parameters, sampler configuration, runtime options, and output paths.
 
   - `--sources sources.yaml`: Defines the sources to be injected and/or recovered. This includes the true physical parameters of the sources as well as the prior ranges used for inference.
+
+The algorithm provides flexibility to perform analyses with either full-resolution data or coarse-grained data. In the former case, the likelihood describing the data follows a Whittle distribution [@Moran:1951], while in the latter, it collapses to a Gamma distribution [@Appourchaux:2003] with degrees of freedom equal to the number of bins used in the averaging process. 
 
 # Quality Control
 
