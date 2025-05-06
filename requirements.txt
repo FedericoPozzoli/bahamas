@@ -1,6 +1,6 @@
 astropy==6.0.1
 corner==2.2.1
-h5py==3.2.1
+h5py
 healpy==1.16.1
 jax==0.4.30
 matplotlib==3.8.4
