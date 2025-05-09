@@ -67,7 +67,7 @@ The algorithm provides flexibility to perform analyses with either full-resoluti
 
 # Performance
 
-![Caption for the figure](paper/joss_corner.pdf)
+![Caption for the figure](paper/joss_corner.png)
 
 # Acknowledgements
 
