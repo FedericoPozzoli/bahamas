@@ -9,18 +9,20 @@ BAHAMAS is under active development, so be aware of potential brittleness, bugs,
 
 ## Features
 
-- 🔊 **SGWB Signal Generation**
-  - Generate synthetic SGWB data directly in the frequency domain
-  - Simulate single full-spectrum signals or split the signal into multiple time chunks
+The package includes two main command-line interfaces:
 
-- 📈 **Flexible Inference Engine**
-  - Perform parameter estimation of multiple stochastic signals using different statistical approaches:
-    - **Gamma Likelihood**: for coarse-grained binned data
-    - **Whittle Likelihood**: for full-resolution frequency data
-  - Joint inference of multiple overlapping SGWB components
+  - `run_data.py`: Data simulation and preprocessing. 
 
-- 🌌 **Galactic Foreground Support**
-  - Analyze chunked data to reconstruct both the spectrum and the time-dependent **modulation** of Galactic foregrounds
+  - `run_pe.py`: Parameter estimation and minimal diagnostics
+
+Both scripts require two input files:
+
+  - `--config config.yaml`: Specifies the simulation and inference settings, including data injection parameters, sampler configuration, runtime options, and output paths.
+
+  - `--sources sources.yaml`: Defines the sources to be injected and/or recovered. This includes the true physical parameters of the sources as well as the prior ranges used for inference.
+
+The data consist of two datastreams—the A and E channels—which are specific combinations of Time-Delay Interferometry (TDI) variables. In `bahamas`, the data are generated in the frequency domain, chunk by chunk. This represents a simplification, as it neglects potential biases arising in the time domain, such as windowing effects and spectral leakage. We also note that the duration of each chunk—and consequently the frequency resolution of each segment—can be set arbitrarily in config.yaml. However, we recommend not using time lengths shorter than $10^4 \mathrm{s}$, which corresponds to a frequency resolution of approximately $\Delta f \sim 0.1 \mathrm{mHz}$, below which the characterization of LISA's instrumental noise is not guaranteed.  
+The algorithm provides flexibility to perform analyses with either full-resolution data or coarse-grained data over different chunks. In the former case, the likelihood describing the data follows a Whittle distribution in each segment, while in the latter, it collapses to a Gamma distribution with degrees of freedom equal to the number of bins used in the averaging process.
 
 ## Installation
 

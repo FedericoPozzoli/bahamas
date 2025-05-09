@@ -17,11 +17,24 @@ Dependencies:
     - h5py
 """
 from bahamas.psd_strain import egp
-from bahamas.method import setting_hmc 
+from bahamas.method import setting_hmc
+from bahamas.method import setting_nessai 
 
 import numpy as np
 import h5py
+import os
 
+def get_first_part(path: str) -> str:
+    """
+    Extract the first part of a file path.
+
+    Parameters:
+    - path (str): The file path.
+
+    Returns:
+    - str: The first part of the file path.
+    """
+    return os.path.dirname(path)
 
 def read_data(config):
     """
@@ -113,6 +126,8 @@ class InferenceMethod:
                 log_like = setting_hmc.whittle_lik
                 if 'beta' in self.config['inference']:
                     log_like = setting_hmc.beta_scaled_log_likelihood(log_like, beta=self.config['inference']['beta'])
+            elif sampler in ['nested']:
+                log_like = setting_nessai.whittle_lik
             t1, t2, dof = self._calculate_dof()
 
         elif mode == 'Gamma':
@@ -120,6 +135,8 @@ class InferenceMethod:
                 log_like = setting_hmc.gamma_lik
                 if 'beta' in self.config['inference']:
                     log_like = setting_hmc.beta_scaled_log_likelihood(log_like, beta=self.config['inference']['beta'])
+            elif sampler in ['nested']:
+                log_like = setting_nessai.gamma_lik
             t1, t2, dof = self._calculate_dof(gamma=True)
 
         else:
@@ -169,7 +186,8 @@ class InferenceMethod:
                 - dof (array): Degrees of freedom for each segment.
         """
         if any(key in self.config for key in ['chunk']):
-            time_data = np.loadtxt('../data/time_interval.txt')
+            folder = get_first_part(self.config['inference']['file'])
+            time_data = np.loadtxt(f'{folder}/time_interval.txt')
             t1, t2 = time_data[0], time_data[1]
             N = (t2 - t1) // self.dt
             if self.config['mod'] == 'lin':
@@ -216,7 +234,7 @@ class EGPMatrix:
         return np.dot(k_star, inv_cov)
 
 
-def set_inference(config, sources):
+def set(config, sources):
     """
     Set up the inference process, including likelihood and EGP matrix initialization.
 

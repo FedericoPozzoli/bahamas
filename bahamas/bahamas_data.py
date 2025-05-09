@@ -39,6 +39,18 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
+def get_first_part(path: str) -> str:
+    """
+    Extract the first part of a file path.
+
+    Parameters:
+    - path (str): The file path.
+
+    Returns:
+    - str: The first part of the file path.
+    """
+    return os.path.dirname(path)
+
 def get_last_part(path: str) -> str:
     """
     Extract the last part of a file path.
@@ -109,17 +121,19 @@ class SignalProcessor:
         - config (dict): Configuration parameters.
         - sources (dict): Source parameters.
         """
-        self.T = config['T']
-        self.dt = config['dt']
-        self.nseg = config['nseg']
-        self.file = config['file']
-        self.fileAV = config['fileAV']
+        self.config = config
+        self.T = self.config['T']
+        self.dt = self.config['dt']
+        self.nseg = self.config['nseg']
+        self.file = self.config['file']
+        self.fileAV = self.config['fileAV']
         self.sources = sources
+        
         self.freq_tot = []
         self.N_tot = []
         self.T1, self.T2 = [], []
 
-        if 'response_num' in config:
+        if 'response_num' in self.config:
             self.custom_response = config['response_num']
             
             if 'gen' in config:
@@ -161,23 +175,31 @@ class SignalProcessor:
         Handle the series based on configuration (chunks, or full resolution).
         """
         
-        if 'galactic_DWD_time' in sources or 'galactic_prototype' in sources:
-            if 'chunk' not in config:
+        if 'galactic_DWD_time' in self.sources:
+            if 'chunk' not in self.config:
                 logger.error('Use chunked or gapped data with cyclo galactic sources')
                 sys.exit()
 
-        elif 'chunk' in config:
+        if 'chunk' in self.config:
             logger.info('Production of chunked data')
-            tch = config['chunk']['duration']    
+            tch = self.config['chunk']['duration']    
             self.TOBS = tch
+
+            t0 = 0
+            if 't0' in self.config:
+                t0 = self.config['t0']
 
             nch = self.T // tch
             N = tch // self.dt
+
+            # Create frequency grid
             df = 1 / tch
             freqs = np.arange(0, 1 / (2*self.dt), df)
             self.freq_tot = [freqs.copy() for _ in range(nch)]
             self.N_tot = [N for _ in range(nch)]    
-            tt = np.linspace(0, self.T, nch + 1)
+
+            # Create time intervals
+            tt = np.linspace(t0, t0 + self.T, nch + 1)
             self.T1 = tt[:-1]
             self.T2 = tt[1:]
 
@@ -197,8 +219,12 @@ class SignalProcessor:
         Returns:
         - tuple: Response arrays.
         """
+        if self.custom_response == False:
+            # If custom response is not used, return None
+            return [np.zeros_like(freqs) for _ in range(self.ntdi)]
         
-        return resp.get_response(freqs, gen = self.gen, tdi = self.tdi, equal_arm = self.equal_arm, cross_term = self.cross_term)
+        else:
+            return resp.get_response(freqs, gen = self.gen, tdi = self.tdi, equal_arm = self.equal_arm, cross_term = self.cross_term)
 
 
     def simulate_data(self):
@@ -213,19 +239,19 @@ class SignalProcessor:
             data_chunk_tdi, data_chunk_tdi_av, response_tdi_av = [], [], []
             for ind_tdi in range(self.ntdi):
                 psd_tdi, _ = psd.model_psd(freqs, sources=self.sources, response=response_tdi[ind_tdi], injected=True, t1=self.T1[i], t2=self.T2[i], tdi=i)
-                _, _tdi = psd.GP_freq(freqs, self.dt, psd=psd_tdi, seed=np.random.randint(0, 100))
+                _, _tdi = GP_freq(freqs, self.dt, psd=psd_tdi, seed=np.random.randint(0, 100))
                 data_chunk_tdi.append(_tdi)
 
-                if config['mod'] == 'lin':
+                if self.config['mod'] == 'lin':
                     dof = self.N_tot[i] // self.nseg
-                    f, d_av_tdi, R_av_tdi = psd.average_chunks(freqs, 2*(self.dt**2 / self.TOBS)*np.abs(_tdi)**2, response_tdi[ind_tdi], dof)      
+                    f, d_av_tdi, R_av_tdi = average_chunks(freqs, 2*(self.dt**2 / self.TOBS)*np.abs(_tdi)**2, response_tdi[ind_tdi], dof)      
                     data_chunk_tdi_av.append(d_av_tdi)
                     response_tdi_av.append(R_av_tdi)
                     if ind_tdi == 0:                  
                         count.append(dof*np.ones_like(f))
 
-                elif config['mod'] == 'log':
-                    f, d_av_tdi, R_av_tdi, c = psd.average_log_chunks(freqs, 2*(self.dt**2 / self.TOBS)*np.abs(_tdi)**2, response_tdi[ind_tdi], config['nseg'])
+                elif self.config['mod'] == 'log':
+                    f, d_av_tdi, R_av_tdi, c = average_log_chunks(freqs, 2*(self.dt**2 / self.TOBS)*np.abs(_tdi)**2, response_tdi[ind_tdi], self.config['nseg'])
                     data_chunk_tdi_av.append(d_av_tdi)
                     response_tdi_av.append(R_av_tdi)
                     if ind_tdi == 0:
@@ -271,9 +297,10 @@ class SignalProcessor:
         logger.info(f"Data saved in {self.file}.h5 and {self.fileAV}.h5")
 
         # Save time intervals if chunks are present
-        if any(key in config for key in ['chunk']):
+        if any(key in self.config for key in ['chunk']):
             logger.info("Saving start and end of chunk.")
-            np.savetxt('../data/time_interval.txt', [self.T1, self.T2])
+            name_folder = get_first_part(self.config['fileAV'])
+            np.savetxt(f'{name_folder}/time_interval.txt', [self.T1, self.T2])
 
     def plot_psd(self):
         """
@@ -286,11 +313,11 @@ class SignalProcessor:
         self.freq_output = np.arange(1e-5, 0.029, 1 / self.T)
         self.df = 1 / self.T
 
-        if 'galactic_DWD_time' not in sources and 'galactic_prototype' not in sources:   
+        if 'galactic_DWD_time' not in self.sources:   
             self.RAA_output, self.REE_output = self.compute_response(self.freq_output)
             psd_totA, self.psdA_output = psd.model_psd(self.freq_output, sources=self.sources, response=self.RAA_output, injected=True)
             psd_totE, self.psdE_output = psd.model_psd(self.freq_output, sources=self.sources, response=self.REE_output, injected=True)
-            for i, name in enumerate(sources.keys()):
+            for i, name in enumerate(self.sources.keys()):
                 plt.loglog(self.freq_output, self.psdA_output[i], label=name)
 
         for i in range(len(self.T1)):
@@ -301,17 +328,17 @@ class SignalProcessor:
         plt.ylabel("Power Spectral Density")
         plt.title("PSD of the Generated Signal")
         plt.legend()
-        name_ = get_last_part(config['fileAV'])
-        name_folder = config['folder_plot']
+        name_ = get_last_part(self.config['fileAV'])
+        name_folder = self.config['folder_plot']
         plt.savefig(f'{name_folder}data_{name_}.png', bbox_inches='tight')
 
-        if 'chunk' in config:
+        if 'chunk' in self.config:
             plt.figure(figsize=(10, 4))
             for j in range(len(self.T1)):
                 ft = np.insert(self.data[j][0], 0, 0)
                 ift = np.fft.irfft(ft)
                 plt.plot(np.linspace(self.T1[j], self.T2[j], len(ift))[:-1], ift[:-1], rasterized=True, color='teal', alpha=0.3)
-            plt.savefig('../data/mod_gal.png', bbox_inches='tight')
+            plt.savefig(f'{name_folder}mod_gal.png', bbox_inches='tight')
 
 
     def SNR2(self, Sh, Sn):
@@ -331,33 +358,108 @@ class SignalProcessor:
         """
         Compute and log the Signal-to-Noise Ratio (SNR) for each source.
         """
-        if 'galactic_DWD_time' not in sources and 'galactic_prototype' not in sources:
-            for i, name in enumerate(sources.keys()):
+        if 'galactic_DWD_time' not in self.sources and 'galactic_prototype' not in self.sources:
+            for i, name in enumerate(self.sources.keys()):
                 if name == 'instr_noise':
                     SnA, SnE = self.psdA_output[i], self.psdE_output[i]
 
-            for i, name in enumerate(sources.keys()):
+            for i, name in enumerate(self.sources.keys()):
                 if name != 'instr_noise':
                     SNRA = self.SNR2(Sh=self.psdA_output[i], Sn=SnA)
                     SNRE = self.SNR2(Sh=self.psdE_output[i], Sn=SnE)
                     snr = np.sqrt(SNRA + SNRE)
                     logger.info(f'SNR of {name}: {round(snr)}')
 
-if __name__ == '__main__':
-    """
-    Main function to execute the script.
-    It parses command-line arguments, loads configuration files, and processes signals.
-    """
-    # Parse arguments and load configuration
-    args = parse_arguments()
-    config = load_yaml(args.config)
-    sources = load_yaml(args.sources)['sources']
 
-    # Initialize and process signals
-    processor = SignalProcessor(config, sources)
-    processor.handle_series()
-    processor.simulate_data()
-    processor.save_data()
-    processor.plot_psd()
-    processor.compute_SNR()
-    logger.info("Processing completed.")
+##################################################################################
+# DATA GENERATION AND PROCESSING
+##################################################################################
+
+def GP_freq(freqs, dt, psd, seed=42, time=False):
+    """
+    Generates a stationary Gaussian process using the inverse FFT method.
+
+    Args:
+        freqs (array): Frequency array.
+        dt (float): Time step.
+        psd (array): Power spectral density.
+        seed (int): Random seed.
+        time (bool or str): If True, returns time-domain signal. If 'both', returns both time and frequency domain.
+
+    Returns:
+        tuple: Frequency and Fourier coefficients, or time and signal, or both.
+    """
+    np.random.seed(seed)
+    amp_r = np.random.normal(loc=np.zeros_like(freqs), scale=np.sqrt(psd * (len(freqs) / dt)))
+    amp_i = np.random.normal(loc=np.zeros_like(freqs), scale=np.sqrt(psd * (len(freqs) / dt)))
+    fourier_coeffs = (amp_r + 1j * amp_i) / np.sqrt(2)
+    fourier_coeffs[0] = 0
+
+    if time == True:
+        x = np.fft.irfft(fourier_coeffs, n=len(freqs) * 2)
+        t = np.arange(len(freqs) * 2) * dt
+        return t, x
+    elif time == 'both':
+        x = np.fft.irfft(fourier_coeffs, n=len(freqs) * 2)
+        t = np.arange(len(freqs) * 2) * dt
+        return freqs, fourier_coeffs, t, x
+    else:
+        return freqs, fourier_coeffs
+    
+
+def average_chunks(freqs, data, response, chunk_size):
+    """
+    Averages data in chunks.
+
+    Args:
+        freqs (array): Frequency array.
+        data (array): Data array.
+        response (array): Response array.
+        chunk_size (int): Size of each chunk.
+
+    Returns:
+        tuple: Averaged frequency, data, and response arrays.
+    """
+    data_chunks = np.array_split(data, len(data) // chunk_size)
+    response_chunks = np.array_split(response, len(data) // chunk_size)
+    freq_chunks = np.array_split(freqs, len(data) // chunk_size)
+
+    d = [np.mean(chunk) for chunk in data_chunks]
+    r = [np.mean(chunk) for chunk in response_chunks]
+    f = [np.mean(chunk) for chunk in freq_chunks]
+
+    return np.array(f), np.array(d), np.array(r)
+
+
+def average_log_chunks(freqs, data, response, num_bins=50):
+    """
+    Averages data in logarithmic bins.
+
+    Args:
+        freqs (array): Frequency array.
+        data (array): Data array.
+        response (array): Response array.
+        num_bins (int): Number of bins.
+
+    Returns:
+        tuple: Averaged frequency, data, response, and count arrays.
+    """
+    freqs = np.asarray(freqs)
+    data = np.asarray(data)
+    response = np.asarray(response)
+
+    log_min = np.log10(np.min(freqs[freqs > 0]))
+    log_max = np.log10(np.max(freqs))
+    log_bins = np.logspace(log_min, log_max, num_bins + 1)
+
+    f_avg, d_avg, r_avg, count = [], [], [], []
+
+    for i in range(num_bins):
+        mask = (freqs >= log_bins[i]) & (freqs < log_bins[i + 1])
+        if np.any(mask):
+            f_avg.append(0.5 * (freqs[mask][0] + freqs[mask][-1]))
+            d_avg.append(np.mean(data[mask]))
+            r_avg.append(np.mean(response[mask]))
+            count.append(np.sum(mask))
+
+    return np.array(f_avg), np.array(d_avg), np.array(r_avg), np.array(count)

@@ -8,6 +8,8 @@ It is designed to be run from the command line with specified arguments.
 
 import argparse
 import logging
+from bahamas.backend_context import initialize_backend
+initialize_backend(use_jax=True)  # Initialize backend with JAX
 from bahamas import bahamas_data
 
 # Configure logger
@@ -21,8 +23,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 console_handler.setFormatter(formatter)
 logger.addHandler(console_handler)
 
-if __name__ == "__main__":
-    # Set up argument parser
+def main():
     parser = argparse.ArgumentParser(description='Run BAHAMAS data processing pipeline')
     parser.add_argument('--config', type=str, required=True, help='YAML config file')
     parser.add_argument('--sources', type=str, required=True, help='YAML sources file')
@@ -41,3 +42,6 @@ if __name__ == "__main__":
     processor.plot_psd()
     processor.compute_SNR()
     logger.info("Processing completed.")
+
+if __name__ == "__main__":
+    main()

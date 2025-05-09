@@ -460,7 +460,6 @@ class TDImatrix:
             SC = orb.SpacecraftOrbit()
             self.L_map = {ind[i]: SC.link_versor(t = 0, link = link[i])[1] for i in range(len(link))}
          
-        print(f"Link lengths: {self.L_map}")
         mtM = Mtdi(freq=self.freq, gen=self.gen, L_map= self.L_map)
         self.MTDI = mtM.Mwrap(type=self.type)
 

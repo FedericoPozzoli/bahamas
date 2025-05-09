@@ -5,4 +5,5 @@ Inference methods for BAHAMAS:
 """
 
 from .setting_hmc import *
+from .setting_nessai import *
 from .setting_inference import *

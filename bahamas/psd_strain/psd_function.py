@@ -3,22 +3,26 @@ This module includes various signal models, noise models, and functions to compu
 from multiple sources. It also provides functions for generating Gaussian processes and averaging data.
 The module uses JAX for efficient computation and supports both time and frequency domain analysis.
 """
+from bahamas.backend_context import get_backend_components
+# Load backend components after backend initialization
+jnp, jit, lax = get_backend_components()
+
+print(f"np is from: {jnp.__name__}")
+print(f"jit is from: {jit}")
+# Check if lax is available
+if lax is not None:
+    print(f"lax is from: {lax}")
+    import jax
+    jax.config.update('jax_enable_x64', True)
+
 from bahamas.psd_response import average_envelope as env
 from bahamas.psd_strain import egp
 
 
 from scipy.signal import welch
-import jax
-import jax.numpy as jnp
-from jax.scipy.special import gammaln
-from jax import random, lax
 from astropy.cosmology import Planck18
 import warnings
 import numpy as np
-
-
-# Enable 64-bit precision in JAX
-jax.config.update('jax_enable_x64', True)
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
@@ -33,7 +37,7 @@ year = 31557600.0  # Seconds in a year
 ##################################################################################
 #SIGNAL MODELS
 ##################################################################################
-@jax.jit
+@jit
 def Omega_vacuum(freqs, par):
     """"
     Vacuum model for gravitational wave signal.
@@ -55,7 +59,7 @@ def Omega_vacuum(freqs, par):
     return S_h
 
 
-@jax.jit
+@jit
 def Omega_extra_foreground(freqs, par):    
     """
     Extra galactic foreground of white dwarf binaries.
@@ -79,7 +83,7 @@ def Omega_extra_foreground(freqs, par):
 	
     return S_h
 
-@jax.jit
+@jit
 def galactic_foreground(freqs, par, injected = False):
     """
     Galactic foreground of white dwarf binaries.
@@ -124,7 +128,7 @@ def galactic_foreground(freqs, par, injected = False):
     return psd
 
 
-@jax.jit
+@jit
 def galactic_foreground_time(freqs, par, injected=False, t1=0, t2=0, tdi=0):
     """
     Galactic foreground model for gravitational wave signal with time dependence.
@@ -187,7 +191,7 @@ def galactic_foreground_time(freqs, par, injected=False, t1=0, t2=0, tdi=0):
     return psd
 
 ##################################################################################NOISE
-@jax.jit
+@jit
 def Stm(f, A):
     """
     Test mass noise model. True value of A is 3.
@@ -200,7 +204,7 @@ def Stm(f, A):
     
     return A**2*10**(-30)*(1 + (0.4*10**-3/f)**2)*(1 + (f/(8*10**-3))**4)*(1/(2*jnp.pi*f*clight)**2) 
 
-@jax.jit
+@jit
 def Soms(f, P):
     """
     Optical metrology noise model. True value of P is 15.
@@ -213,7 +217,7 @@ def Soms(f, P):
  
     return P**2*10**(-24)*(1 + (2*10**-3/f)**4)*(2*jnp.pi*f/clight)**2
 
-@jax.jit
+@jit
 def noise(freqs, par):
     """
     Instrumental noise model in AE channel.
@@ -299,98 +303,3 @@ def model_psd(freqs, sources, response, injected=False, tdi=0, **kwargs):
         return psd, true_psd
     else:
         return psd
-
-
-##################################################################################
-# DATA GENERATION AND PROCESSING
-##################################################################################
-
-def GP_freq(freqs, dt, psd, seed=42, time=False):
-    """
-    Generates a stationary Gaussian process using the inverse FFT method.
-
-    Args:
-        freqs (array): Frequency array.
-        dt (float): Time step.
-        psd (array): Power spectral density.
-        seed (int): Random seed.
-        time (bool or str): If True, returns time-domain signal. If 'both', returns both time and frequency domain.
-
-    Returns:
-        tuple: Frequency and Fourier coefficients, or time and signal, or both.
-    """
-    np.random.seed(seed)
-    amp_r = np.random.normal(loc=np.zeros_like(freqs), scale=np.sqrt(psd * (len(freqs) / dt)))
-    amp_i = np.random.normal(loc=np.zeros_like(freqs), scale=np.sqrt(psd * (len(freqs) / dt)))
-    fourier_coeffs = (amp_r + 1j * amp_i) / np.sqrt(2)
-    fourier_coeffs[0] = 0
-
-    if time == True:
-        x = np.fft.irfft(fourier_coeffs, n=len(freqs) * 2)
-        t = np.arange(len(freqs) * 2) * dt
-        return t, x
-    elif time == 'both':
-        x = np.fft.irfft(fourier_coeffs, n=len(freqs) * 2)
-        t = np.arange(len(freqs) * 2) * dt
-        return freqs, fourier_coeffs, t, x
-    else:
-        return freqs, fourier_coeffs
-    
-
-def average_chunks(freqs, data, response, chunk_size):
-    """
-    Averages data in chunks.
-
-    Args:
-        freqs (array): Frequency array.
-        data (array): Data array.
-        response (array): Response array.
-        chunk_size (int): Size of each chunk.
-
-    Returns:
-        tuple: Averaged frequency, data, and response arrays.
-    """
-    data_chunks = np.array_split(data, len(data) // chunk_size)
-    response_chunks = np.array_split(response, len(data) // chunk_size)
-    freq_chunks = np.array_split(freqs, len(data) // chunk_size)
-
-    d = [np.mean(chunk) for chunk in data_chunks]
-    r = [np.mean(chunk) for chunk in response_chunks]
-    f = [np.mean(chunk) for chunk in freq_chunks]
-
-    return np.array(f), np.array(d), np.array(r)
-
-
-def average_log_chunks(freqs, data, response, num_bins=50):
-    """
-    Averages data in logarithmic bins.
-
-    Args:
-        freqs (array): Frequency array.
-        data (array): Data array.
-        response (array): Response array.
-        num_bins (int): Number of bins.
-
-    Returns:
-        tuple: Averaged frequency, data, response, and count arrays.
-    """
-    freqs = np.asarray(freqs)
-    data = np.asarray(data)
-    response = np.asarray(response)
-
-    log_min = np.log10(np.min(freqs[freqs > 0]))
-    log_max = np.log10(np.max(freqs))
-    log_bins = np.logspace(log_min, log_max, num_bins + 1)
-
-    f_avg, d_avg, r_avg, count = [], [], [], []
-
-    for i in range(num_bins):
-        mask = (freqs >= log_bins[i]) & (freqs < log_bins[i + 1])
-        if np.any(mask):
-            f_avg.append(0.5 * (freqs[mask][0] + freqs[mask][-1]))
-            d_avg.append(np.mean(data[mask]))
-            r_avg.append(np.mean(response[mask]))
-            count.append(np.sum(mask))
-
-    return np.array(f_avg), np.array(d_avg), np.array(r_avg), np.array(count)
-            

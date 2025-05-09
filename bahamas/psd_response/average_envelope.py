@@ -8,10 +8,17 @@ the time, the initial phase of LISA barycenter, the initial rotation of satellit
 It returns the envelopes of the A and E signals.
 """
 
-import jax.numpy as jnp
-from jax import lax
-import jax
-jax.config.update('jax_enable_x64', True)
+from bahamas.backend_context import get_backend_components
+# Load backend components after backend initialization
+jnp, jit, lax = get_backend_components()
+
+#import jax.numpy as jnp
+#from jax import lax
+#import jax
+
+if lax is not None:
+    import jax
+    jax.config.update('jax_enable_x64', True)
 
 def average_envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigma2, Psi, t1, t2, LISA_Orbital_Freq, alpha0 = 0., beta0 = 0., tdi = 0):
     """
@@ -214,22 +221,16 @@ def average_envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigm
 
     A = jnp.abs(cDect * A0 - sDect * E0)  
     E = jnp.abs(sDect * A0 + cDect * E0) 
-    mod = lax.cond(
-    tdi == 0,
-    lambda _: A,
-    lambda _: E,
-    operand=None
-    )      
+    
+
+    if lax is not None:
+        mod = lax.cond(
+        tdi == 0,
+        lambda _: A,
+        lambda _: E,
+        operand=None
+        )  
+    else:
+        mod = A if tdi == 0 else E   
+         
     return mod
-
-
-
-
-
-
-
-
-
-
-
-

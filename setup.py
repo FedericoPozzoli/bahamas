@@ -19,11 +19,17 @@ setup(
         'matplotlib',
         'h5py',
         'pyyaml',
-        'pandas',
+        'nessai',
     ],
     classifiers=[
         'Programming Language :: Python :: 3',
         'Operating System :: OS Independent',
     ],
     python_requires='>=3.8',
+    entry_points={
+    'console_scripts': [
+        'bahamas_inference=utilities.run_pe:main',
+        'bahamas_data=utilities.run_data:main',
+    ],
+},
 )

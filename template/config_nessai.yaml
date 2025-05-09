@@ -1,8 +1,8 @@
 # This file is used to set up the parameters for the data and inference process.
 
-T: 2592000 #observation time in seconds
+T: 6480000 #observation time in seconds
 dt: 10 #time step in seconds
-nseg: 1000 #number of segments
+nseg: 2000 #number of segments
 mod: 'log' #method to coarse grain the data
 
 response_num: False #flag to compute the response function to a anisotropic, stationary, and Gaussian SGWB
@@ -19,15 +19,15 @@ file: './bahamas/data/data_whittle' #file to store full data
 fileAV: './bahamas/data/data_gamma' #file to store coarse grained data
 folder_plot: './bahamas/data/'
 
-inference: #section dedicated to the inference process
-  sampler: "NUTS" #choice of the sampler
-  likelihood: "Gamma" #choice of the likelihood (Gamma, Whittle)
-  beta: 1 #inverse of temperature for Thermodynamical integration
-  warmup: 1000 #number of warmup samples
-  samples: 4000 #number of samples
-  chains: 1 #number of chains
-  chain_method: 'parallel' #parallel, vectorized, sequential
-  adapt_matrix: True
-  file:  './bahamas/data/data_gamma' #file to read the data
-  file_post:  './bahamas/data/result_gamma.npz' #file to store the posterior samples
+
+inference:
+  sampler: "nested"
+  likelihood: "Gamma"
+  nlive: 1000
+  n_pool: 1
+  checkpointing: True
+  checkpoint_on_training: True
+  flow_config:
+  file: './bahamas/data/data_gamma'
+  file_post: './bahamas/data/result_gamma.npz'
 

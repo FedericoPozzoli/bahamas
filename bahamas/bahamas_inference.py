@@ -17,13 +17,14 @@ Usage:
     The script will load the configuration and sources files, run the inference, and save the results.    
 """
 
-from bahamas.method import setting_hmc
 from bahamas.method import setting_inference
+from bahamas.method import setting_nessai
 
 import numpy as np
 import jax
 import numpyro
 from numpyro.infer import MCMC, NUTS
+from nessai.flowsampler import FlowSampler
 import yaml
 import argparse
 import matplotlib.pyplot as plt
@@ -100,6 +101,30 @@ class Method:
             kernel = NUTS(self.log_like, adapt_mass_matrix=self.config['inference']['adapt_matrix'])
             self.method = MCMC(kernel, **self._get_mcmc_params())
 
+        elif self.sampler == 'nested':            
+            sampler_opts = self.config['inference']
+            # To get checkpointing to work
+            if 'flow_config' not in sampler_opts:
+                sampler_opts['flow_config'] = None
+            if 'checkpointing' not in sampler_opts:
+                sampler_opts['checkpointing'] = True
+            if 'checkpoint_on_training' not in sampler_opts:
+                sampler_opts['checkpoint_on_training'] = True
+            
+            if 'max_threads' in sampler_opts:
+                nthreads = sampler_opts['max_threads']
+            
+            # Select entries relevant for FlowSampler 
+            keys = ['nlive', 'n_pool', 'flow_config', 'checkpointing', 'checkpoint_on_training', 'max_threads']
+            sampler_kwargs = {key: self.config['inference'][key] for key in keys if key in sampler_opts}
+
+            # Filtering
+            print(f"Passing the following kwargs: {sampler_kwargs}")
+            model = setting_nessai.nessai_model(self.log_like, **self.kwargs)
+            name = get_first_part(self.config['inference']['file_post'])
+            self.method = FlowSampler(model, resume=False, output=name, **sampler_kwargs, )
+
+   
 
     def _get_mcmc_params(self):
         """
@@ -123,11 +148,12 @@ class Method:
         Returns:
         - np.ndarray: Posterior samples.
         """
-
+        self.result = {}
         if self.sampler in ['NUTS']:
             self.method.run(jax.random.PRNGKey(100), **self.kwargs)
             self.posterior = self.method.get_samples()
-            self.result = np.column_stack([self.posterior[key] for key in self.posterior])
+            self.chain = np.column_stack([self.posterior[key] for key in self.posterior])
+            self.result['chain'] = self.chain
             self.plot_corner()
             self.plot_autocorrelation()
 
@@ -137,8 +163,14 @@ class Method:
                 self.posterior['log_likelihood'] = self.loglike
                 #add to posterior "log_likelihood"
                 self.posterior['beta'] = self.config['inference']['beta']
-                self.result = self.posterior
+                self.result['chain'] = self.posterior
 
+            return self.result
+    
+        elif self.sampler == 'nested':
+            self.method.run()
+            self.posterior = self.method.posterior_samples
+            self.result['chain'] = np.column_stack([self.posterior[key] for key in self.posterior.dtype.names])
             return self.result
    
         else:
@@ -158,7 +190,7 @@ class Method:
         Create and save a corner plot of the posterior samples.
         """
         plt.figure()
-        corner.corner(self.result, quiet = True)
+        corner.corner(self.result['chain'], quiet = True)
         name_ = get_last_part(self.config['inference']['file'])
         name_folder = get_first_part(self.config['inference']['file_post'])
         plt.savefig(f'{name_folder}/corner_{name_}.png')
@@ -167,10 +199,8 @@ class Method:
         """
         Create and save an autocorrelation plot of the posterior samples.
         """
-        corr = numpyro.diagnostics.autocorrelation(self.result, axis=0)
-
-        if 'beta' in self.config['inference']:
-            self.result['autocorr'] = corr
+        corr = numpyro.diagnostics.autocorrelation(self.result['chain'], axis=0)
+        self.result['autocorr'] = corr
             
         plt.figure()
         for i in corr.T:
@@ -208,7 +238,7 @@ class BayesianInference:
         with open(self.config_file, "r") as file:
             self.config = yaml.safe_load(file)
 
-        self.log_like, self.data, self.freqs, self.response, self.count, self.dt, self.t1, self.t2, self.dof, self.matrix_egp = set.set_inference(
+        self.log_like, self.data, self.freqs, self.response, self.count, self.dt, self.t1, self.t2, self.dof, self.matrix_egp = setting_inference.set(
             config=self.config, sources=self.sources)
 
     def run_inference(self):
