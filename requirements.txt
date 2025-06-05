@@ -11,3 +11,4 @@ pytest
 PyYAML==6.0.2
 ruamel.yaml==0.18.10
 scipy==1.13.1
+nessai
