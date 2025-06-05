@@ -1,7 +1,8 @@
 # BAHAMAS
 
 [![JOSS draft](https://github.com/fede121/bahamas/actions/workflows/paper.yml/badge.svg?branch=main)](https://github.com/fede121/bahamas/actions/workflows/paper.yml) [![Tests](https://github.com/fede121/bahamas/actions/workflows/testing.yml/badge.svg?branch=main)](https://github.com/fede121/bahamas/actions/workflows/testing.yml)
-[![Documentation Status](https://img.shields.io/badge/docs-online-brightgreen)](https://fede121.github.io/bahamas/)
+[![Documentation Status](https://github.com/fede121/bahamas/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/fede121/bahamas/actions/workflows/docs.yml)
+
 
 **Bahamas: BAyesian inference with HAmiltonian Montecarlo for Astrophysical Stochastic background.**
 
