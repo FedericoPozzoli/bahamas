@@ -22,7 +22,7 @@ def test_model_psd_single_source():
         "instr_noise": {"A": 3, "P": 15}
     }
     response = 1.0
-    psd = model_psd(freqs, sources, response)
+    psd = model_psd(freqs, sources, response, gen2 = False)
 
     # Numerical checks
     expected_psd = np.array([1.0e-36, 1.0e-34, 1.0e-32])  # Replace with actual expected values
@@ -51,7 +51,7 @@ def test_model_psd_numeric():
     response = 1.0
 
     # Compute the PSD using the model_psd function
-    psd, true_psds = model_psd(freqs, sources, response, injected=True)
+    psd, true_psds = model_psd(freqs, sources, response, injected=True, gen2 = False)
 
     # Expected PSD values (manually computed or from a reference implementation)
     expected_psd = jnp.array([1.2e-40, 2.3e-38, 3.4e-36])  # Replace with actual expected values
