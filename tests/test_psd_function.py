@@ -1,5 +1,19 @@
 import numpy as np
-import jax.numpy as jnp
+from bahamas.backend_context import get_backend_components
+# Load backend components after backend initialization
+jnp, jit, lax = get_backend_components()
+
+# Check if lax is available
+if jnp is None:
+    #default to jax numpy
+    from bahamas.backend_context import initialize_backend
+    initialize_backend(use_jax=True)
+    jnp, jit, lax = get_backend_components()
+
+if lax is not None:
+    import jax
+    jax.config.update('jax_enable_x64', True)
+
 from bahamas.psd_strain.psd_function import model_psd
 
 def test_model_psd_single_source():
