@@ -7,17 +7,18 @@ from bahamas.backend_context import get_backend_components
 # Load backend components after backend initialization
 jnp, jit, lax = get_backend_components()
 
-print(f"np is from: {jnp.__name__}")
-print(f"jit is from: {jit}")
 # Check if lax is available
+if jnp is None:
+    #default to jax numpy
+    from bahamas.backend_context import initialize_backend
+    initialize_backend(use_jax=True)
+    jnp, jit, lax = get_backend_components()
+
 if lax is not None:
-    print(f"lax is from: {lax}")
     import jax
     jax.config.update('jax_enable_x64', True)
 
 from bahamas.psd_response import average_envelope as env
-from bahamas.psd_strain import egp
-
 
 from scipy.signal import welch
 from astropy.cosmology import Planck18
@@ -38,9 +39,9 @@ year = 31557600.0  # Seconds in a year
 #SIGNAL MODELS
 ##################################################################################
 @jit
-def Omega_vacuum(freqs, par):
+def Omega_pl(freqs, par):
     """"
-    Vacuum model for gravitational wave signal.
+    power-law model for gravitational wave signal.
     Args:
         freqs (array): Frequency array.
         par (dict): Parameters for the model.
@@ -49,13 +50,14 @@ def Omega_vacuum(freqs, par):
         array: Power spectral density.
     """
 
-    Avac = par['Avac']
+    Amp = par['Amp']
     slope = par['slope']
 
-    f0 = 1 
-    Omega = 10**Avac*(freqs/ f0)**slope
+    f0 = 1
+    Omega = 10**Amp*(freqs/ f0)**slope
     S_h = Omega * (3*H02)/ (4*jnp.pi**2*freqs**3)
 
+    
     return S_h
 
 
@@ -84,7 +86,7 @@ def Omega_extra_foreground(freqs, par):
     return S_h
 
 @jit
-def galactic_foreground(freqs, par, injected = False):
+def galactic_foreground(freqs, par, injected = False, gen2=False):
     """
     Galactic foreground of white dwarf binaries.
     https://arxiv.org/abs/2103.14598
@@ -118,18 +120,30 @@ def galactic_foreground(freqs, par, injected = False):
         fr2 = par['fr2']
         
     
-    res = 10**amp*jnp.exp(-(freqs/10**fr1)**alpha) *\
+    Sh = 10**amp*jnp.exp(-(freqs/10**fr1)**alpha) *\
         (freqs**(-7./3.))*0.5*(1.0 + jnp.tanh(-(freqs-10**fknee)/10**fr2))
     
-    fstar = 1 / L
-    x = 2*jnp.pi * (freqs / fstar) * jnp.sin(2*jnp.pi * (freqs / fstar))
-    response = 4 * x**2 
-    psd = res*response
-    return psd
+    # LISA arm length and angular frequency
+    omega = 2.0 * jnp.pi * freqs
+    x = omega * L
+    tr = (x) ** 2 * jnp.sin(x)**2
+    Sh *= tr
+
+    factor_tdi2 = 4 * jnp.sin(2 * x)**2
+
+    if lax is not None:
+        # Use lax.cond for JAX compatibility
+        Sh = lax.cond(gen2, lambda s: s * factor_tdi2, lambda s: s, Sh)
+    else:
+        # Fallback for non-JAX environments
+        Sh = Sh * factor_tdi2 if gen2 else Sh
+
+    return Sh
+
 
 
 @jit
-def galactic_foreground_time(freqs, par, injected=False, t1=0, t2=0, tdi=0):
+def galactic_foreground_time(freqs, par, injected=False, t1=0, t2=0, tdi=0, gen2=False):
     """
     Galactic foreground model for gravitational wave signal with time dependence.
     https://arxiv.org/abs/2410.08274, https://arxiv.org/abs/2410.08263
@@ -179,64 +193,87 @@ def galactic_foreground_time(freqs, par, injected=False, t1=0, t2=0, tdi=0):
         LISA_Orbital_Freq=1 / year, alpha0=0., beta0=0., tdi=tdi
     )
 
-    res = (
+    Sh = (
         amp_time * 10**amp * jnp.exp(-(freqs / 10**fr1)**alpha) *
         (freqs**(-7./3.)) * 0.5 * (1.0 + jnp.tanh(-(freqs - 10**fknee) / 10**fr2))
     )
 
-    fstar = 1 / L
-    x = 2 * jnp.pi * (freqs / fstar) * jnp.sin(2 * jnp.pi * (freqs / fstar))
-    
-    psd = res * x**2
-    return psd
+    # LISA arm length and angular frequency
+    omega = 2.0 * jnp.pi * freqs
+    x = omega * L
+    tr = (x) ** 2 * jnp.sin(x)**2
+    Sh *= tr
+
+    factor_tdi2 = 4 * jnp.sin(2 * x)**2
+
+    if lax is not None:
+        # Use lax.cond for JAX compatibility
+        Sh = lax.cond(gen2, lambda s: s * factor_tdi2, lambda s: s, Sh)
+    else:
+        # Fallback for non-JAX environments
+        Sh = Sh * factor_tdi2 if gen2 else Sh
+
+    return Sh
+
+
+
 
 ##################################################################################NOISE
 @jit
-def Stm(f, A):
+def noise(freq, par, gen2=False):
     """
-    Test mass noise model. True value of A is 3.
-    Args:
-        f (array): Frequency array.
-        A (float): Amplitude parameter.
-    Returns:
-        array: Power spectral density.
-    """
-    
-    return A**2*10**(-30)*(1 + (0.4*10**-3/f)**2)*(1 + (f/(8*10**-3))**4)*(1/(2*jnp.pi*f*clight)**2) 
+    Computes the noise power spectral density (PSD).
 
-@jit
-def Soms(f, P):
-    """
-    Optical metrology noise model. True value of P is 15.
-    Args:
-        f (array): Frequency array.
-        P (float): Amplitude parameter.
-    Returns:
-        array: Power spectral density.
-    """
- 
-    return P**2*10**(-24)*(1 + (2*10**-3/f)**4)*(2*jnp.pi*f/clight)**2
+    This function calculates the noise PSD for LISA,
+    including contributions from test mass noise and the optical metrology system.
+    It supports both standard and TDI2 (Time-Delay Interferometry 2) configurations.
 
-@jit
-def noise(freqs, par):
-    """
-    Instrumental noise model in AE channel.
-    https://arxiv.org/abs/2211.02539
     Args:
-        freqs (array): Frequency array.
-        par (dict): Parameters for the model.
-        
-    Returns:
-        array: Power spectral density.
-    """
+        freq (array): Frequency array in Hz.
+        par (dict): Dictionary containing the parameters:
+            - 'A' (float): Amplitude of the test mass noise.
+            - 'P' (float): Amplitude of the optical metrology system noise.
+        tdi2 (bool, optional): If True, applies the TDI2 factor. Defaults to False.
 
+    Returns:
+        array: Noise power spectral density (PSD) as a function of frequency.
+    """
     A = par['A']
     P = par['P']
 
-    psd  = 8*jnp.sin(2*jnp.pi*freqs*L)**2*(Soms(freqs, P)*(jnp.cos(2*jnp.pi*freqs*L) + 2) 
-                                          + 2*(3 + 2*jnp.cos(2*jnp.pi*freqs*L) + jnp.cos(4*jnp.pi*freqs*L))*Stm(freqs, A))
-    
-    return psd
+    # Test mass noise
+    sa_a = (A * 10**-15)**2 * (1.0 + (0.4e-3 / freq)**2) * (1.0 + (freq / 8e-3)**4)  # in acceleration
+    sa_d = sa_a * (2.0 * jnp.pi * freq)**(-4.0)  # in displacement
+    sa_nu = sa_d * (2.0 * jnp.pi * freq / clight)**2  # in relative frequency units
+    s_pm = sa_nu
+
+    # Optical Metrology System (OMS)
+    relax = 1  # Relaxation factor (can be modified if needed)
+    psd_oms_d = (P * 10**-12)**2 * relax  # in displacement
+    s_oms_nu = psd_oms_d * (2.0 * jnp.pi * freq / clight)**2  # in relative frequency units
+    s_op = s_oms_nu
+
+    # LISA arm length and angular frequency
+    omega = 2.0 * jnp.pi * freq
+
+    # Compute the noise PSD
+    x = omega * L
+    s_n = 8.0 * jnp.sin(x)**2 * (
+        2.0 * s_pm * (3.0 + 2.0 * jnp.cos(x) + jnp.cos(2 * x)) +
+        s_op * (2.0 + jnp.cos(x))
+    )
+
+    # Apply TDI2 factor if specified
+    factor_tdi2 = 4 * jnp.sin(2 * x)**2
+
+    if lax is not None:
+        # Use lax.cond for JAX compatibility
+        s_n = lax.cond(gen2, lambda s: s * factor_tdi2, lambda s: s, s_n)
+    else:
+        # Fallback for non-JAX environments
+        s_n = s_n * factor_tdi2 if gen2 else s_n
+
+    return s_n
 
 
 ##################################################################################
@@ -251,7 +288,7 @@ def model_psd(freqs, sources, response, injected=False, tdi=0, **kwargs):
         response (float): Response factor to scale the PSD.
         injected (bool, optional): If True, uses injected parameters for sources. Defaults to False.
         tdi (int, optional): Time-delay interferometry channel (0 = A, 1 = E). Defaults to 0.
-        **kwargs: Additional arguments for specific sources (e.g., `matrix_egp`, `t1`, `t2`).
+        **kwargs: Additional arguments for specific sources (e.g., `t1`, `t2`).
 
     Returns:
         array: Total PSD if `injected` is False.
@@ -272,31 +309,32 @@ def model_psd(freqs, sources, response, injected=False, tdi=0, **kwargs):
     # Loop through each source and compute its contribution to the PSD
     for source_name in sources.keys():
 
-        if source_name == 'egp':
-            matrix = kwargs.get('matrix_egp')
-            psd += response * egp.egp(freqs, sources[source_name], matrix)
-
-        elif source_name == 'extra_DWD':
+        if source_name == 'extra_DWD':
             psd += response * Omega_extra_foreground(freqs, sources[source_name])
             if injected:
                 true_psd.append(response * Omega_extra_foreground(freqs, sources[source_name]))
 
         elif source_name == 'galactic_DWD':
-            psd += galactic_foreground(freqs, sources[source_name], injected=injected)
+            psd += galactic_foreground(freqs, sources[source_name], injected=injected, gen2=kwargs.get('gen2'))
             if injected:
-                true_psd.append(galactic_foreground(freqs, sources[source_name], injected=injected))
+                true_psd.append(galactic_foreground(freqs, sources[source_name], injected=injected, gen2=kwargs.get('gen2')))
 
         elif source_name == 'galactic_DWD_time':
             t1 = kwargs.get('t1')
             t2 = kwargs.get('t2')
-            psd += galactic_foreground_time(freqs, sources[source_name], t1=t1, t2=t2, tdi=tdi, injected=injected)
+            psd += galactic_foreground_time(freqs, sources[source_name], t1=t1, t2=t2, tdi=tdi, injected=injected, gen2=kwargs.get('gen2'))
             if injected:
-                true_psd.append(galactic_foreground_time(freqs, sources[source_name], t1=t1, t2=t2, tdi=tdi, injected=injected))
+                true_psd.append(galactic_foreground_time(freqs, sources[source_name], t1=t1, t2=t2, tdi=tdi, injected=injected, gen2=kwargs.get('gen2')))
 
         elif source_name == 'instr_noise':
-            psd += noise(freqs, sources[source_name])
+            psd += noise(freqs, sources[source_name], gen2=kwargs.get('gen2'))
             if injected:
-                true_psd.append(noise(freqs, sources[source_name]))
+                true_psd.append(noise(freqs, sources[source_name], gen2=kwargs.get('gen2')))
+
+        elif source_name == 'power_law':
+            psd += response * Omega_pl(freqs, sources[source_name])
+            if injected:
+                true_psd.append(response * Omega_pl(freqs, sources[source_name]))
 
     # Return the total PSD and optionally the true PSDs for each source
     if injected:

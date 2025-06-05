@@ -25,21 +25,10 @@ def initialize_backend(use_jax=True, force_reinitialize=False):
     from bahamas.backend import get_backend
     np, jit, lax = get_backend(use_jax=use_jax)
     _backend_initialized = True
-    print(os.path.dirname(__file__))
+    # Set the backend globally
+    
     print(f"Backend initialized with {'JAX' if use_jax else 'NumPy'}")
     print(f"np is from: {np.__name__}")
-    print(f"jit is from: {jit}")
-    print(f"lax is from: {lax}")
-
-def switch_backend(use_jax=True):
-    """
-    Switch the backend dynamically between JAX and NumPy.
-
-    Args:
-        use_jax (bool): Whether to switch to JAX as the backend. If False, switch to NumPy.
-    """
-    initialize_backend(use_jax=use_jax, force_reinitialize=True)
-    print(f"Switched to {'JAX' if use_jax else 'NumPy'} backend.")
 
 def get_backend_components():
     """

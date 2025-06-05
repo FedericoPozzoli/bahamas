@@ -16,7 +16,6 @@ Dependencies:
     - NumPy
     - h5py
 """
-from bahamas.psd_strain import egp
 from bahamas.method import setting_hmc
 from bahamas.method import setting_nessai 
 
@@ -51,6 +50,7 @@ def read_data(config):
             - count (list): List of count arrays for each segment.
     """
     file_path = config['inference']['file'] + '.h5'
+    gen2 = config.get('gen2')
     f1 = config.get('f1', None)
     f2 = config.get('f2', None)
 
@@ -86,7 +86,7 @@ def read_data(config):
             freq_list.append(freq_chunk)
             count.append(count_chunk)
 
-    return data_list, response_list, freq_list, count
+    return data_list, response_list, freq_list, count, gen2
 
 
 class InferenceMethod:
@@ -104,8 +104,18 @@ class InferenceMethod:
         self.config = config
         self.dt = config['dt']
         self.T = config['T']
-        self.TOBS = config['chunk']['duration'] if 'chunk' in config else config['T']
+
+        if 'chunk' in config:
+            self.TOBS = config['chunk']['duration']
+
+        elif 'gaps' in config:
+            self.TOBS = config['gaps']['sched_period']
+            
+        else:
+            self.TOBS = config['T']
+        
         self.N = self.T // self.dt
+
 
     def select_method(self):
         """
@@ -185,9 +195,13 @@ class InferenceMethod:
                 - t2 (array): End times for each segment.
                 - dof (array): Degrees of freedom for each segment.
         """
-        if any(key in self.config for key in ['chunk']):
+        if any(key in self.config for key in ['gaps', 'chunk']):
             folder = get_first_part(self.config['inference']['file'])
-            time_data = np.loadtxt(f'{folder}/time_interval.txt')
+            try:
+                time_data = np.loadtxt(f'{folder}/time_interval.txt')
+            except:
+                time_data = np.loadtxt(f'../data/time_interval.txt')
+ 
             t1, t2 = time_data[0], time_data[1]
             N = (t2 - t1) // self.dt
             if self.config['mod'] == 'lin':
@@ -202,36 +216,6 @@ class InferenceMethod:
                 dof = self.get_number_logbin(self.config['nseg'], self.config['f1'], self.config['f2']) if gamma else np.array([self.T / self.dt // 2])
 
         return t1, t2, dof
-
-
-class EGPMatrix:
-    """
-    Initializes the EGP matrix for Gaussian Process modeling.
-    """
-
-    @staticmethod
-    def initialize_matrix(config, sources, freqs):
-        """
-        Initialize the EGP matrix based on the configuration and sources.
-
-        Args:
-            config (dict): Configuration dictionary.
-            sources (dict): Source parameters.
-            freqs (list): Frequency arrays for each segment.
-
-        Returns:
-            np.ndarray or None: The initialized EGP matrix, or None if not applicable.
-        """
-        if 'egp' not in sources:
-            return None
-
-        num = next((param['num'] for param in sources['egp'] if 'num' in param), None)
-        nodes = np.logspace(np.log10(config['f1']), np.log10(config['f2']), num)
-        cov = egp.GP_SGWB_kernel_SE(np.log10(nodes), np.log10(nodes), parameter=[6.3], eps=1.0e-6)
-        inv_cov = np.linalg.inv(cov)
-        k_star = egp.GP_SGWB_kernel_SE(np.log10(freqs[0]), np.log10(nodes), parameter=[6.3])
-
-        return np.dot(k_star, inv_cov)
 
 
 def set(config, sources):
@@ -256,13 +240,10 @@ def set(config, sources):
             - matrix_egp (np.ndarray or None): The initialized EGP matrix.
     """
     # Load Data
-    data, response, freqs, count = read_data(config=config)
+    data, response, freqs, count, gen2 = read_data(config=config)
 
     # Setup Inference Method
     infer = InferenceMethod(config)
     log_like, t1, t2, dof = infer.select_method()
-
-    # Initialize EGP Matrix
-    matrix_egp = EGPMatrix.initialize_matrix(config, sources, freqs)
     
-    return log_like, data, freqs, response, count, config['dt'], t1, t2, dof, matrix_egp
+    return log_like, data, freqs, response, count, config['dt'], t1, t2, dof, gen2

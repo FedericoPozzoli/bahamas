@@ -23,7 +23,7 @@ import nessai.model
 
 
 
-def whittle_lik(sample, data, freqs, response, count, dt, t1, t2, dof, matrix_egp):
+def whittle_lik(sample, data, freqs, response, count, dt, t1, t2, dof,gen2):
     """
     Computes the Whittle likelihood for a given sample.
 
@@ -46,7 +46,7 @@ def whittle_lik(sample, data, freqs, response, count, dt, t1, t2, dof, matrix_eg
         for i, tdi in enumerate(segment):
             f, n = np.array(freqs[j]), dof[j]
             psd_model = psd.model_psd(
-                freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], matrix_egp=matrix_egp, tdi=i
+                freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2=gen2
             )
             psd_model = (n / dt) * psd_model
             log_likelihood += (
@@ -57,7 +57,7 @@ def whittle_lik(sample, data, freqs, response, count, dt, t1, t2, dof, matrix_eg
     return log_likelihood
 
 
-def gamma_lik(sample, data, freqs, response, count, dt, t1, t2, dof, matrix_egp):
+def gamma_lik(sample, data, freqs, response, count, dt, t1, t2, dof, gen2):
     """
     Computes the Gamma likelihood for a given sample.
 
@@ -70,7 +70,6 @@ def gamma_lik(sample, data, freqs, response, count, dt, t1, t2, dof, matrix_egp)
         dt (float): Time step.
         t1, t2 (list): Start and end times for each segment.
         dof (list): Degrees of freedom for each segment.
-        matrix_egp (array): Matrix for EGP modeling.
 
     Returns:
         float: Log-likelihood value.
@@ -80,7 +79,7 @@ def gamma_lik(sample, data, freqs, response, count, dt, t1, t2, dof, matrix_egp)
         for i, tdi in enumerate(segment):
             f = np.array(freqs[j])
             psd_model = psd.model_psd(
-                freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], matrix_egp=matrix_egp, tdi=i
+                freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2=gen2
             ) / count[j]
             log_likelihood += (
                 -np.sum(sc.special.gammaln(count[j]))

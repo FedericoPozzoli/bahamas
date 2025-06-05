@@ -18,6 +18,7 @@ Usage:
 
 from bahamas.psd_strain import psd_function as psd
 from bahamas.psd_response import response as resp
+from bahamas.method import gaps
 
 import matplotlib.pylab as plt
 import numpy as np
@@ -136,10 +137,10 @@ class SignalProcessor:
         if 'response_num' in self.config:
             self.custom_response = config['response_num']
             
-            if 'gen' in config:
-                self.gen = config['gen']
+            if 'gen2' in config:
+                self.gen2 = config['gen2']
             else:
-                self.gen = 2
+                self.gen2 = False
 
             if 'cross_term' in config:
                 self.cross_term = config['cross_term']
@@ -174,13 +175,37 @@ class SignalProcessor:
         """
         Handle the series based on configuration (chunks, or full resolution).
         """
+        if 'gaps' in self.config and 'chunk' in self.config:
+            logger.error('Use chunked or gapped data')
+            sys.exit()
         
         if 'galactic_DWD_time' in self.sources:
             if 'chunk' not in self.config:
                 logger.error('Use chunked or gapped data with cyclo galactic sources')
                 sys.exit()
 
-        if 'chunk' in self.config:
+        if 'gaps' in self.config:
+            logger.info('Production of gapped data')
+            tg = self.config['gaps']
+            self.start, self.end = gaps.generate_gaps(
+                self.T, scheduled_gap=tg['sched_gap'], scheduled_period=tg['sched_period'],
+                unscheduled_gap=tg['unsched_gap'], exp_scale=tg['exp_scale'],
+                merge_threshold=tg['thresh'], duty_cycle=tg['duty_cycle']
+            )
+            for i in range(len(self.start)):
+                df = 1 / (self.end[i] - self.start[i])
+                N = (self.end[i] - self.start) // self.dt
+          
+                freqs = np.arange(0, 1 / (2 * self.dt), df)
+                self.freq_tot.append(freqs)
+                self.N_tot.append(N)
+                self.T1.append(self.start[i])
+                self.T2.append(self.end[i])
+                logger.info(f"Chunk {i+1}: start={self.start[i]}, end={self.end[i]}, T ={self.T2[i] - self.T1[i]}")
+          
+            self.TOBS = self.config['gaps']['sched_period']
+
+        elif 'chunk' in self.config:
             logger.info('Production of chunked data')
             tch = self.config['chunk']['duration']    
             self.TOBS = tch
@@ -224,7 +249,7 @@ class SignalProcessor:
             return [np.zeros_like(freqs) for _ in range(self.ntdi)]
         
         else:
-            return resp.get_response(freqs, gen = self.gen, tdi = self.tdi, equal_arm = self.equal_arm, cross_term = self.cross_term)
+            return resp.get_response(freqs, gen2 = self.gen2, tdi = self.tdi, equal_arm = self.equal_arm, cross_term = self.cross_term)
 
 
     def simulate_data(self):
@@ -238,7 +263,7 @@ class SignalProcessor:
     
             data_chunk_tdi, data_chunk_tdi_av, response_tdi_av = [], [], []
             for ind_tdi in range(self.ntdi):
-                psd_tdi, _ = psd.model_psd(freqs, sources=self.sources, response=response_tdi[ind_tdi], injected=True, t1=self.T1[i], t2=self.T2[i], tdi=i)
+                psd_tdi, _ = psd.model_psd(freqs, sources=self.sources, response=response_tdi[ind_tdi], injected=True, t1=self.T1[i], t2=self.T2[i], tdi=i, gen2 = self.gen2)
                 _, _tdi = GP_freq(freqs, self.dt, psd=psd_tdi, seed=np.random.randint(0, 100))
                 data_chunk_tdi.append(_tdi)
 
@@ -315,8 +340,8 @@ class SignalProcessor:
 
         if 'galactic_DWD_time' not in self.sources:   
             self.RAA_output, self.REE_output = self.compute_response(self.freq_output)
-            psd_totA, self.psdA_output = psd.model_psd(self.freq_output, sources=self.sources, response=self.RAA_output, injected=True)
-            psd_totE, self.psdE_output = psd.model_psd(self.freq_output, sources=self.sources, response=self.REE_output, injected=True)
+            psd_totA, self.psdA_output = psd.model_psd(self.freq_output, sources=self.sources, response=self.RAA_output, injected=True, gen2 = self.gen2)
+            psd_totE, self.psdE_output = psd.model_psd(self.freq_output, sources=self.sources, response=self.REE_output, injected=True, gen2 = self.gen2)
             for i, name in enumerate(self.sources.keys()):
                 plt.loglog(self.freq_output, self.psdA_output[i], label=name)
 
@@ -340,6 +365,14 @@ class SignalProcessor:
                 plt.plot(np.linspace(self.T1[j], self.T2[j], len(ift))[:-1], ift[:-1], rasterized=True, color='teal', alpha=0.3)
             plt.savefig(f'{name_folder}mod_gal.png', bbox_inches='tight')
 
+        if 'gaps' in self.config:
+            plt.figure(figsize=(10, 4))
+            for j in range(len(self.T1)):
+                ft = np.insert(self.data[j][0], 0, 0)
+                ift = np.fft.irfft(ft)
+                print(f'T1: {self.T1[j]}, T2: {self.T2[j]}')
+                plt.plot(np.linspace(self.T1[j], self.T2[j], len(ift))[:-1], ift[:-1], rasterized=True, color='teal', alpha=0.3)
+            plt.savefig(f'{name_folder}mod_gal.png', bbox_inches='tight')
 
     def SNR2(self, Sh, Sn):
         """

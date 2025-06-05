@@ -35,10 +35,10 @@ sources:
   instr_noise:
     - name: "A"
       bounds: [1, 5]
-      injected: 3
+      injected: 2.4
     - name: "P"
-      bounds: [10, 20]
-      injected: 15
+      bounds: [3, 10]
+      injected: 7.9
 
  
    

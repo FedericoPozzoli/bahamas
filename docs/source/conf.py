@@ -1,8 +1,9 @@
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath('../../'))  # so Sphinx finds bahamas
 
-def setup(app):
+def setup(app):    
     app.add_css_file("favicon_switcher.css")
 
 project = 'bahamas'

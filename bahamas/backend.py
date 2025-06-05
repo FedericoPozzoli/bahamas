@@ -20,4 +20,5 @@ def get_backend(use_jax=True):
         import numpy as np
         jit = lambda x: x  # No-op for NumPy
         lax = None  # Not applicable for NumPy
+    
     return np, jit, lax

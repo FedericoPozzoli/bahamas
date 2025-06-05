@@ -4,11 +4,11 @@ T: 6480000 #observation time in seconds
 dt: 10 #time step in seconds
 nseg: 2000 #number of segments
 mod: 'log' #method to coarse grain the data
+gen2: True
+response_num: True #flag to compute the response function to a anisotropic, stationary, and Gaussian SGWB
 
-response_num: False #flag to compute the response function to a anisotropic, stationary, and Gaussian SGWB
-
-chunk: #section dedicated to the chunk of data
-  duration: 1296000 #duration of the chunk in seconds
+#chunk: #section dedicated to the chunk of data
+#  duration: 1296000 #duration of the chunk in seconds
 
 #frange
 f1: 0.0001 #minimum frequency in Hz

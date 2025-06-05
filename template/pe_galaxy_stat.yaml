@@ -1,29 +1,36 @@
 # This is a template for the list of sources to provide to the bahamas-inference
 # accounting for stationary galacatic foreground. 
 sources:
-  galactic_DWD: 
-    - name: "alpha"
-      bounds:  [1., 2.]
-      injected: 1.8
-    - name: "amp"
-      bounds: [-47, -40]
-      injected: -43.94309514866353 
-    - name: "fknee"
-      bounds: [-4, -1.8] 
-      injected: -2.595679532778269 
-    - name: "fr1"
-      bounds: [-4, -1.8] 
-      injected: -2.856
-    - name: "fr2"
-      bounds: [-4, -1.8]
-      injected: -3.487854923626168 
+#  galactic_DWD: 
+#    - name: "alpha"
+#      bounds:  [1., 2.]
+#      injected: 1.62966700
+#    - name: "amp"
+#      bounds: [-47, -40]
+#      injected: -43.894309514866353 
+#    - name: "fknee"
+#      bounds: [-4, -1.8] 
+#      injected: -2.595679532778269 
+#    - name: "fr1"
+#      bounds: [-4, -1.8] 
+#      injected: -2.856
+#    - name: "fr2"
+#      bounds: [-4, -1.8]
+#      injected: -3.487854923626168 
   instr_noise:
     - name: "A"
       bounds: [1, 5]
-      injected: 3
+      injected: 2.4
     - name: "P"
-      bounds: [10, 20]
-      injected: 15
+      bounds: [3, 10]
+      injected: 7.9
+  power_law:
+    - name: "Amp"
+      bounds: [-16, -3]
+      injected: -10.5
+    - name: "slope"
+      bounds: [0, 5]
+      injected: 0.67
 
  
    
