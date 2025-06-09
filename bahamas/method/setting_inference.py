@@ -189,7 +189,7 @@ class InferenceMethod:
             dof = np.array(self.count) 
         else:
             if any(key in self.config for key in ['gaps', 'chunk']):
-                (self.t2 - self.t1) / self.dt // 2
+                dof = (self.t2 - self.t1) / self.dt // 2
             else:
                 dof = np.array([self.T / self.dt // 2])
             
@@ -210,7 +210,6 @@ def set(config, sources):
             - data (list): Observed data segments.
             - freqs (list): Frequency grids for each segment.
             - response (list): Response functions for each segment.
-            - count (list): Counts for each segment.
             - dt (float): Time step.
             - t1 (array): Start times for each segment.
             - t2 (array): End times for each segment.
@@ -223,5 +222,5 @@ def set(config, sources):
     # Setup Inference Method
     infer = InferenceMethod(config, t1, t2, count)
     log_like, dof = infer.select_method()
-        
+
     return log_like, data, freqs, response, config['dt'], t1, t2, dof, gen2
