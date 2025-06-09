@@ -35,7 +35,7 @@ bibliography: paper.bib
 
 # Summary
 
-The Laser Interferometer Space Antenna (LISA) [@LISA:2018] is an upcoming space-based mission designed to detect gravitational waves (GWs) of both astrophysical and cosmological origin in the milli-hertz band. LISA is expected to observe thousands of white dwarf (WD) binaries within the Milky Way simultaneously, while an unresolved population of such binaries will overlap incoherently, forming the so-called galactic foreground.
+The Laser Interferometer Space Antenna (LISA) [@LISA:2018] is an upcoming space-based mission designed to detect gravitational waves (GWs) of both astrophysical and cosmological origin in the milli-hertz band. LISA is expected to observe thousands of white dwarf (WD) binaries within the Milky Way simultaneously, while the unresolved population of such binaries will overlap incoherently, forming the so-called galactic foreground.
 One of the central challenges of the so-called global fit [@Katz:2025] is to jointly model both the resolvable and unresolvable WD populations. In particular, reconstructing the galactic foreground is extremely difficult due to both computational and modeling complexities.
 In this article, we introduce `bahamas`, a tool designed to address some of these challenges from a global fit perspective.
 
@@ -59,21 +59,30 @@ Both scripts require two input files:
 
   - `--sources sources.yaml`: Defines the sources to be injected and/or recovered. This includes the true physical parameters of the sources as well as the prior ranges used for inference.
 
-The data consist of two datastreams—the A and E channels—which are specific combinations of Time-Delay Interferometry (TDI) variables [@Tinto:2021]. In `bahamas`, the data are generated in the frequency domain, chunk by chunk. This represents a simplification, as it neglects potential biases arising in the time domain, such as windowing effects and spectral leakage. We also note that the duration of each chunk—and consequently the frequency resolution of each segment—can be set arbitrarily in config.yaml. However, we recommend not using time lengths shorter than $10^4 \mathrm{s}$, which corresponds to a frequency resolution of approximately $\Delta f \sim 0.1 \mathrm{mHz}$, below which the characterization of LISA's instrumental noise is not guaranteed.  
+The data consist of two datastreams—the A and E channels—which are specific combinations of Time-Delay Interferometry (TDI) variables [@Tinto:2021]. In `bahamas`, the data are generated in the frequency domain, chunk by chunk. This represents a simplification, as it neglects potential biases arising in the time domain, such as windowing effects and spectral leakage.  The duration of each chunk—and consequently the frequency resolution—can be configured via config.yaml. However, we recommend not using time lengths shorter than $10^4 \mathrm{s}$, which corresponds to a frequency resolution of approximately $\Delta f \sim 0.1 \mathrm{mHz}$, below which the characterization of LISA's instrumental noise is not guaranteed.  
 
 The algorithm also allows for the analysis of stationary, isotropic, and Gaussian stochastic process (e.g., a signal characterized by a power-law power spectral density), enabling the evaluation of the impact of multiple overlapping sources.
 
-We also provide the option to include data gaps, which represent periods during the mission when no useful data are available. These gaps can occur due to scheduled maintenance (scheduled gaps) or unforeseen hardware issues (unscheduled gaps). Our goal is not to mitigate the impact of these interruptions but rather to characterize the gaps impact on the reconstruction of stochastic signals.
+We also provide the option to include data gaps, which represent periods during the mission when no useful data are available. These gaps can occur due to scheduled maintenance (scheduled gaps) or unforeseen hardware issues (unscheduled gaps). The goal is not to mitigate the impact of these interruptions but rather to characterize their effect on the reconstruction of stochastic signals.
 
 The algorithm provides flexibility to perform analyses with either full-resolution data or coarse-grained data over different chunks. In the former case, the likelihood describing the data follows a Whittle distribution [@Moran:1951] in each segment, while in the latter, it collapses to a Gamma distribution [@Appourchaux:2003] with degrees of freedom equal to the number of bins used in the averaging process. 
 
-`bahamas` also offers the option to explore the posterior distribution using a nested sampling algorithm, specifically employing the implementation provided by nessai [@Williams:2021]. This enables users to obtain accurate estimates of the statistical evidence. In future updates, we plan to include methods for computing the evidence directly from HMC sample chains, such as thermodynamic integration or stepping-stone algorithms [@Maturana-Russel:2019].
 
 # Performance
+
 
 ![Caption for the figure](joss_corner.png)
 
 # Outlooks
+
+** Evidence **
+
+In future updates, we plan to include methods for computing the Bayesian evidence, enabling rigorous model selection. To estimate the evidence from HMC sample chains, we will implement techniques such as thermodynamic integration and stepping-stone algorithms [@Maturana-Russel:2019].
+Currently, `bahamas` also supports posterior exploration via nested sampling, using the nessai implementation [@Williams:2021], which provides evidence estimates as part of its output.
+
+** Flexible Parametrization **
+
+Uncertainties in both the stochastic signal and the instrumental noise are expected for LISA, not only in their overall amplitude but also in their spectral shapes. For example, variations in the astrophysical modeling of white dwarf populations can lead to fluctuations in the shape of the Galactic foreground spectrum. Similarly, incorporating more realistic noise components can introduce additional complexity. To address these uncertainties, we plan to include in `bahamas` the capability to model such variations. As an example of a flexible parametrization, we provide the Expectation value of a Gaussian Process (EGP), developed in [@Pozzoli:2024], which can naturally capture spectral shape uncertainties.
 
 # Acknowledgements
 
