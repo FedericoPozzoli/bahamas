@@ -264,7 +264,7 @@ class SignalProcessor:
             data_chunk_tdi, data_chunk_tdi_av, response_tdi_av = [], [], []
             for ind_tdi in range(self.ntdi):
                 psd_tdi, _ = psd.model_psd(freqs, sources=self.sources, response=response_tdi[ind_tdi], injected=True, t1=self.T1[i], t2=self.T2[i], tdi=i, gen2 = self.gen2)
-                _, _tdi = GP_freq(freqs, self.dt, psd=psd_tdi, seed=np.random.randint(0, 100))
+                _, _tdi = GP_freq(freqs, self.dt, psd=psd_tdi, seed=np.random.randint(0, 1000))
                 data_chunk_tdi.append(_tdi)
 
                 if self.config['mod'] == 'lin':

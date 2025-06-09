@@ -238,7 +238,7 @@ class BayesianInference:
         with open(self.config_file, "r") as file:
             self.config = yaml.safe_load(file)
 
-        self.log_like, self.data, self.freqs, self.response, self.count, self.dt, self.t1, self.t2, self.dof, self.gen2 = setting_inference.set(
+        self.log_like, self.data, self.freqs, self.response, self.dt, self.t1, self.t2, self.dof, self.gen2 = setting_inference.set(
             config=self.config, sources=self.sources)
 
     def run_inference(self):
@@ -249,7 +249,7 @@ class BayesianInference:
         - np.ndarray: Posterior samples.
         """
         kwargs = {
-            'data': self.data, 'freqs': self.freqs, 'response': self.response, 'count': self.count,
+            'data': self.data, 'freqs': self.freqs, 'response': self.response, 
             'sources': self.sources, 'dt': self.dt, 't1': self.t1, 't2': self.t2, 'dof': self.dof, 'gen2': self.gen2
         }
         method = Method(self.config, self.log_like, **kwargs)

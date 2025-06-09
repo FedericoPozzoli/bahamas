@@ -86,7 +86,18 @@ def read_data(config):
             freq_list.append(freq_chunk)
             count.append(count_chunk)
 
-    return data_list, response_list, freq_list, count, gen2
+    if any(key in config for key in ['gaps', 'chunk']):
+            folder = get_first_part(config['inference']['file'])
+            try:
+                time_data = np.loadtxt(f'{folder}/time_interval.txt')
+            except:
+                time_data = np.loadtxt(f'../data/time_interval.txt')
+ 
+            t1, t2 = time_data[0], time_data[1]
+    else:
+            t1, t2 = np.array([0]), np.array([0])
+
+    return data_list, response_list, freq_list, count, gen2, t1, t2
 
 
 class InferenceMethod:
@@ -94,16 +105,22 @@ class InferenceMethod:
     Handles the selection of likelihood methods and related configurations.
     """
 
-    def __init__(self, config):
+    def __init__(self, config, t1, t2, count):
         """
         Initialize the InferenceMethod class.
 
         Args:
             config (dict): Configuration dictionary.
+            t1 (array): Start times for each segment.
+            t2 (array): End times for each segment.
+            count (array): Count of data points for each segment.
         """
         self.config = config
         self.dt = config['dt']
         self.T = config['T']
+        self.t1 = t1
+        self.t2 = t2
+        self.count = count
 
         if 'chunk' in config:
             self.TOBS = config['chunk']['duration']
@@ -138,7 +155,7 @@ class InferenceMethod:
                     log_like = setting_hmc.beta_scaled_log_likelihood(log_like, beta=self.config['inference']['beta'])
             elif sampler in ['nested']:
                 log_like = setting_nessai.whittle_lik
-            t1, t2, dof = self._calculate_dof()
+            dof = self._calculate_dof()
 
         elif mode == 'Gamma':
             if sampler in ['NUTS']:
@@ -147,40 +164,13 @@ class InferenceMethod:
                     log_like = setting_hmc.beta_scaled_log_likelihood(log_like, beta=self.config['inference']['beta'])
             elif sampler in ['nested']:
                 log_like = setting_nessai.gamma_lik
-            t1, t2, dof = self._calculate_dof(gamma=True)
+            dof = self._calculate_dof(gamma=True)
 
         else:
             raise ValueError(f"Unknown Likelihood: {mode}")
 
-        return log_like, t1, t2, dof
+        return log_like, dof
 
-    def get_number_logbin(self, nbin, f1, f2):
-        """
-        Calculate the number of log bins for frequency binning.
-
-        Args:
-            nbin (int): Number of bins.
-            f1 (float): Lower frequency limit.
-            f2 (float): Upper frequency limit.
-
-        Returns:
-            np.ndarray: Array of counts for each log bin.
-        """
-        freqs = np.arange(0, 0.5 / self.dt, 1 / self.TOBS)
-        log_min = np.log10(np.min(freqs[freqs > 0]))
-        log_max = np.log10(np.max(freqs))
-        log_bins = np.logspace(log_min, log_max, nbin + 1)
-
-        counts = []
-        for i in range(nbin):
-            mask = (freqs > log_bins[i]) & (freqs < log_bins[i + 1])
-            if np.any(mask):
-                ref = 0.5 * (freqs[mask][0] + freqs[mask][-1])
-                if f1 < ref < f2:
-                    count = np.sum(mask)
-                    counts.append(count)
-
-        return np.array(counts)
 
     def _calculate_dof(self, gamma=False):
         """
@@ -195,27 +185,15 @@ class InferenceMethod:
                 - t2 (array): End times for each segment.
                 - dof (array): Degrees of freedom for each segment.
         """
-        if any(key in self.config for key in ['gaps', 'chunk']):
-            folder = get_first_part(self.config['inference']['file'])
-            try:
-                time_data = np.loadtxt(f'{folder}/time_interval.txt')
-            except:
-                time_data = np.loadtxt(f'../data/time_interval.txt')
- 
-            t1, t2 = time_data[0], time_data[1]
-            N = (t2 - t1) // self.dt
-            if self.config['mod'] == 'lin':
-                dof = N // self.config['nseg'] if gamma else (t2 - t1) / self.dt // 2
-            elif self.config['mod'] == 'log':
-                dof = self.get_number_logbin(self.config['nseg'], self.config['f1'], self.config['f2']) if gamma else (t2 - t1) / self.dt // 2
+        if gamma:
+            dof = np.array(self.count) 
         else:
-            t1, t2 = np.array([0]), np.array([0])
-            if self.config['mod'] == 'lin':
-                dof = np.array([self.N // self.config['nseg']]) if gamma else np.array([self.T / self.dt // 2])
-            elif self.config['mod'] == 'log':
-                dof = self.get_number_logbin(self.config['nseg'], self.config['f1'], self.config['f2']) if gamma else np.array([self.T / self.dt // 2])
-
-        return t1, t2, dof
+            if any(key in self.config for key in ['gaps', 'chunk']):
+                (self.t2 - self.t1) / self.dt // 2
+            else:
+                dof = np.array([self.T / self.dt // 2])
+            
+        return  dof
 
 
 def set(config, sources):
@@ -240,10 +218,10 @@ def set(config, sources):
             - matrix_egp (np.ndarray or None): The initialized EGP matrix.
     """
     # Load Data
-    data, response, freqs, count, gen2 = read_data(config=config)
+    data, response, freqs, count, gen2, t1, t2 = read_data(config=config)
 
     # Setup Inference Method
-    infer = InferenceMethod(config)
-    log_like, t1, t2, dof = infer.select_method()
-    
-    return log_like, data, freqs, response, count, config['dt'], t1, t2, dof, gen2
+    infer = InferenceMethod(config, t1, t2, count)
+    log_like, dof = infer.select_method()
+        
+    return log_like, data, freqs, response, config['dt'], t1, t2, dof, gen2

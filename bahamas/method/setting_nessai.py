@@ -23,7 +23,7 @@ import nessai.model
 
 
 
-def whittle_lik(sample, data, freqs, response, count, dt, t1, t2, dof,gen2):
+def whittle_lik(sample, data, freqs, response, dt, t1, t2, dof,gen2):
     """
     Computes the Whittle likelihood for a given sample.
 
@@ -32,7 +32,6 @@ def whittle_lik(sample, data, freqs, response, count, dt, t1, t2, dof,gen2):
         data (list): Observed data segments.
         freqs (list): Frequency grids for each segment.
         response (list): Response functions for each segment.
-        count (list): Counts for each segment.
         dt (float): Time step.
         t1, t2 (list): Start and end times for each segment.
         dof (list): Degrees of freedom for each segment.
@@ -57,7 +56,7 @@ def whittle_lik(sample, data, freqs, response, count, dt, t1, t2, dof,gen2):
     return log_likelihood
 
 
-def gamma_lik(sample, data, freqs, response, count, dt, t1, t2, dof, gen2):
+def gamma_lik(sample, data, freqs, response, dt, t1, t2, dof, gen2):
     """
     Computes the Gamma likelihood for a given sample.
 
@@ -66,7 +65,6 @@ def gamma_lik(sample, data, freqs, response, count, dt, t1, t2, dof, gen2):
         data (list): Observed data segments.
         freqs (list): Frequency grids for each segment.
         response (list): Response functions for each segment.
-        count (list): Counts for each segment.
         dt (float): Time step.
         t1, t2 (list): Start and end times for each segment.
         dof (list): Degrees of freedom for each segment.
@@ -79,12 +77,12 @@ def gamma_lik(sample, data, freqs, response, count, dt, t1, t2, dof, gen2):
         for i, tdi in enumerate(segment):
             f = np.array(freqs[j])
             psd_model = psd.model_psd(
-                freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2=gen2
-            ) / count[j]
+                freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2
+            ) / dof[j]
             log_likelihood += (
-                -np.sum(sc.special.gammaln(count[j]))
-                - np.sum(count[j] * np.log(psd_model))
-                + np.sum((count[j] - 1) * np.log(tdi))
+                -np.sum(sc.special.gammaln(dof[j]))
+                - np.sum(dof[j] * np.log(psd_model))
+                + np.sum((dof[j] - 1) * np.log(tdi))
                 - np.sum(tdi / psd_model)
             )
     return log_likelihood
