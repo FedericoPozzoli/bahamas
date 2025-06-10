@@ -37,11 +37,11 @@ bibliography: paper.bib
 
 The Laser Interferometer Space Antenna (LISA) [@LISA:2018] is an upcoming space-based mission designed to detect gravitational waves (GWs) of both astrophysical and cosmological origin in the milli-hertz band. LISA is expected to observe thousands of white dwarf (WD) binaries within the Milky Way simultaneously, while the unresolved population of such binaries will overlap incoherently, forming the so-called galactic foreground.
 One of the central challenges of the so-called global fit [@Katz:2025] is to jointly model both the resolvable and unresolvable WD populations. In particular, reconstructing the galactic foreground is extremely difficult due to both computational and modeling complexities.
-In this article, we introduce `bahamas`, a tool designed to address some of these challenges from a global fit perspective.
+In this article, we introduce `bahamas`, a tool designed to address some of these challenges from a global fit perspective. Additionally, we emphasize that accurately modeling the galactic foreground also has applications in preliminary low-latency detection of massive black hole binaries [@Cornish:2022], which are crucial for advancing multimessenger astronomy.
 
 # Statement of need
 
-The main idea behind the global fit algorithm is to use a Blocked Gibbs sampling technique to jointly analyze different GW sources, including stochastic backgrounds, instrumental noise, and the galactic foreground. LISA is expected to sample data at $\sim 5\mathrm{s}$, with a nominal mission duration of four years. This results in an extremely large dataset for a full-band analysis of the stochastic components. Consequently, computational cost becomes a significant concern for the stochastic sector. Traditional sampling techniques, such as nested sampling or standard Markov Chain Monte Carlo (MCMC), might become prohibitively slow for this task. To address this issue, bahamas employs the No-U-Turn Sampler (NUTS) [@Hoffman:2011], an adaptive variant of Hamiltonian MCMC, which significantly enhances sampling efficiency. It uses the implementation provided by NumPyro [@Phan:2019], which is totally based in JAX, enabling possibly convenient migration to GPU/TPU architectures GPU/TPU architecture [@Bradbury:2018]. 
+The main idea behind the global fit algorithm is to use a Blocked Gibbs sampling technique to jointly analyze different GW sources, including stochastic backgrounds, instrumental noise, and the galactic foreground. LISA is expected to sample data at $\sim 5\mathrm{s}$, with a nominal mission duration of four years. This results in an extremely large dataset for a full-band analysis of the stochastic components. Consequently, computational cost becomes a significant concern for the stochastic sector. Traditional sampling techniques, such as nested sampling or standard Markov Chain Monte Carlo (MCMC), might become prohibitively slow for this task. To address this issue, `bahamas` employs the No-U-Turn Sampler (NUTS) [@Hoffman:2011], an adaptive variant of Hamiltonian MCMC, which significantly enhances sampling efficiency. It uses the implementation provided by NumPyro [@Phan:2019], which is totally based in JAX, enabling possibly convenient migration to GPU/TPU architectures GPU/TPU architecture [@Bradbury:2018]. 
 
 Another issue in the reconstruction of the Galactic foreground is its non-stationary nature. Specifically, the Galactic foreground behaves as a cyclostationary process—a stochastic process with time-dependent periodic properties. This arises from the coupling between the highly anisotropic distribution of unresolved WDs in the Galaxy and the annually varying antenna pattern of LISA. The cyclostationarity is especially evident in the time domain, where the Galactic foreground displays pronounced modulation. Thus, even when the data are divided into chunks to mitigate non-stationarity, the spectral amplitude can still vary inconsistently between chunks.
 There are currently no global fit pipelines accounting for this feature. In `bahamas`, we adopt a time-frequency approach that incorporates the modulation proposed in [@Buscicchio:2024] to model the evolution of spectral amplitude in chunks. The key advantage of this approach is the use of a parameterizable modulation that is both analytical and computationally efficient to evaluate. 
@@ -55,7 +55,7 @@ The package includes two main command-line interfaces:
 
 Both scripts require two input files:
 
-  - `--config config.yaml`: Specifies the simulation and inference settings, including data injection parameters, sampler configuration, runtime options, and output paths.
+  - `--config config.yaml`: Specifies the simulation and inference settings, sampler configuration, and output paths.
 
   - `--sources sources.yaml`: Defines the sources to be injected and/or recovered. This includes the true physical parameters of the sources as well as the prior ranges used for inference.
 
@@ -75,14 +75,15 @@ The algorithm provides flexibility to perform analyses with either full-resoluti
 
 # Outlooks
 
-** Evidence **
+**Evidence**
 
 In future updates, we plan to include methods for computing the Bayesian evidence, enabling rigorous model selection. To estimate the evidence from HMC sample chains, we will implement techniques such as thermodynamic integration and stepping-stone algorithms [@Maturana-Russel:2019].
 Currently, `bahamas` also supports posterior exploration via nested sampling, using the nessai implementation [@Williams:2021], which provides evidence estimates as part of its output.
 
-** Flexible Parametrization **
+**Flexible Parametrization**
 
-Uncertainties in both the stochastic signal and the instrumental noise are expected for LISA, not only in their overall amplitude but also in their spectral shapes. For example, variations in the astrophysical modeling of white dwarf populations can lead to fluctuations in the shape of the Galactic foreground spectrum. Similarly, incorporating more realistic noise components can introduce additional complexity. To address these uncertainties, we plan to include in `bahamas` the capability to model such variations. As an example of a flexible parametrization, we provide the Expectation value of a Gaussian Process (EGP), developed in [@Pozzoli:2024], which can naturally capture spectral shape uncertainties.
+Uncertainties in both the stochastic signal and the instrumental noise are expected for LISA, not only in their overall amplitude but also in their spectral shapes. For example, variations in the astrophysical modeling of white dwarf populations can lead to fluctuations in the shape of the Galactic foreground spectrum. Similarly, incorporating more realistic noise components can introduce additional complexity. To address these shape uncertainties, we plan to integrate the Expectation value of a Gaussian Process (EGP) method, developed in [@Pozzoli:2024], as an example of a flexible parametrization.
+
 
 # Acknowledgements
 
