@@ -20,7 +20,7 @@ if lax is not None:
     import jax
     jax.config.update('jax_enable_x64', True)
 
-def average_envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigma2, Psi, t1, t2, LISA_Orbital_Freq, alpha0 = 0., beta0 = 0., tdi = 0):
+def average_envelopes_gaussian(SinEclipticLatitude, EclipticLongitude, Sigma1, Sigma2, sinPsi, t1, t2, LISA_Orbital_Freq, alpha0 = 0., beta0 = 0., tdi = 0):
     """
     Returns the envelopes of the A and E signals for sources centered at the given sky position,
     averaged over inclination and polarization, with some gaussian distribution with given
@@ -28,9 +28,9 @@ def average_envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigm
 
     :param SinEclipticLatitude: Sine sky position param
     :param EclipticLongitude: Sky position param
-    :param Sigma1: Standard deviation along the first principal axis
-    :param Sigma2: Standard deviation along the second principal axis
-    :param Psi: Rotation angle between ecliptic longitude/latitude and principal axes
+    :param Sigma1: squared of Standard deviation along the first principal axis
+    :param Sigma2: squared of Standard deviation along the second principal axis
+    :param sinPsi: sine of the angle between the two principal axes
     :param LISA_Orbital_Freq: orbital frequency of LISA barycenter (1 / year)
     :param t: time
     :param alpha0: initial phase of LISA barycenter
@@ -41,8 +41,7 @@ def average_envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigm
     SigmaSqSum = Sigma1  +  Sigma2
     SigmaSqDiff = Sigma1  - Sigma2 
 
-    cosPsi = Psi #cos 2 * Psi
-    sinPsi = jnp.sqrt(1 - cosPsi**2)
+    cosPsi = jnp.sqrt(1 - sinPsi**2)
     SigmaSqCos = SigmaSqDiff * cosPsi#jnp.cos(2. * Psi)
     SigmaSqSin = SigmaSqDiff * sinPsi#jnp.sin(2. * Psi)
     SigmaSqPlus = SigmaSqSum + SigmaSqCos
@@ -94,7 +93,7 @@ def average_envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigm
 
     FourphiMbar = 4. * ((EclipticLongitude - alpha0) + jnp.pi / 12.)
 
-    sbM = EclipticLatitude #Sin Ecliptic Latitude
+    sbM = SinEclipticLatitude 
     cbM = jnp.sqrt(1 - sbM**2)
     s2bM = 2. * sbM * cbM
     c2bM = cbM * cbM - sbM * sbM

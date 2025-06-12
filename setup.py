@@ -30,6 +30,7 @@ setup(
     'console_scripts': [
         'bahamas_inference=utilities.run_pe:main',
         'bahamas_data=utilities.run_data:main',
+        'bahamas_input=utilities.run_input:main',
     ],
 },
 )

@@ -13,18 +13,23 @@ BAHAMAS is under active development, so be aware of potential brittleness, bugs,
 
 The package includes two main command-line interfaces:
 
-  - `run_data.py`: Data simulation and preprocessing. 
+  - `bahamas_data`: Data simulation and preprocessing. 
 
-  - `run_pe.py`: Parameter estimation and minimal diagnostics
+  - `bahamas_inference`: Parameter estimation and minimal diagnostics
 
 Both scripts require two input files:
 
-  - `--config config.yaml`: Specifies the simulation and inference settings, including data injection parameters, sampler configuration, runtime options, and output paths.
+  - `--config config.yaml`: Specifies the simulation and inference settings, sampler configuration, and output paths.
 
   - `--sources sources.yaml`: Defines the sources to be injected and/or recovered. This includes the true physical parameters of the sources as well as the prior ranges used for inference.
 
-The data consist of two datastreams—the A and E channels—which are specific combinations of Time-Delay Interferometry (TDI) variables. In `bahamas`, the data are generated in the frequency domain, chunk by chunk. This represents a simplification, as it neglects potential biases arising in the time domain, such as windowing effects and spectral leakage. We also note that the duration of each chunk—and consequently the frequency resolution of each segment—can be set arbitrarily in config.yaml. However, we recommend not using time lengths shorter than $10^4 \mathrm{s}$, which corresponds to a frequency resolution of approximately $\Delta f \sim 0.1 \mathrm{mHz}$, below which the characterization of LISA's instrumental noise is not guaranteed.  
-The algorithm provides flexibility to perform analyses with either full-resolution data or coarse-grained data over different chunks. In the former case, the likelihood describing the data follows a Whittle distribution in each segment, while in the latter, it collapses to a Gamma distribution with degrees of freedom equal to the number of bins used in the averaging process.
+The data consist of two datastreams—the A and E channels—which are specific combinations of Time-Delay Interferometry ([TDI](https://ui.adsabs.harvard.edu/abs/2021LRR....24....1T/abstract)) variables. In `bahamas`, the data are generated in the frequency domain, chunk by chunk. This represents a simplification, as it neglects potential biases arising in the time domain, such as windowing effects and spectral leakage.  The duration of each chunk—and consequently the frequency resolution—can be configured via config.yaml. However, we recommend not using time lengths shorter than $10^4 \mathrm{s}$, which corresponds to a frequency resolution of approximately $\Delta f \sim 0.1 \mathrm{mHz}$, below which the characterization of LISA's instrumental noise is not guaranteed.  
+
+The algorithm also allows for the analysis of stationary, isotropic, and Gaussian stochastic process (e.g., a signal characterized by a power-law power spectral density), enabling the evaluation of the impact of multiple overlapping sources.
+
+We also provide the option to include data gaps, which represent periods during the mission when no useful data are available. These gaps can occur due to scheduled maintenance (scheduled gaps) or unforeseen hardware issues (unscheduled gaps). The goal is not to mitigate the impact of these interruptions but rather to characterize their effect on the reconstruction of stochastic signals.
+
+The algorithm provides flexibility to perform analyses with either full-resolution data or coarse-grained data over different chunks. In the former case, the likelihood describing the data follows a [Whittle](https://api.semanticscholar.org/CorpusID:125739077) distribution in each segment, while in the latter, it collapses to a [Gamma](https://www.aanda.org/articles/aa/pdf/2003/49/aa0401.pdf) distribution with degrees of freedom equal to the number of bins used in the averaging process.
 
 ## Installation
 

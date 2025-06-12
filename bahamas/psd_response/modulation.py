@@ -8,7 +8,7 @@ The function `envelopes_gaussian` computes the envelopes based on the provided p
 import numpy as np
 
 
-def envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigma2, Psi, LISA_Orbital_Freq, t, alpha0 = 0., beta0 = 0.):
+def envelopes_gaussian(SinEclipticLatitude, EclipticLongitude, Sigma1, Sigma2, sinPsi, LISA_Orbital_Freq, t, alpha0 = 0., beta0 = 0.):
     """
     Returns the envelopes of the A and E signals for sources centered at the given sky position,
     averaged over inclination and polarization, with some gaussian distribution with given
@@ -16,9 +16,9 @@ def envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigma2, Psi,
 
     :param SinEclipticLatitude: Sine sky position param
     :param EclipticLongitude: Sky position param
-    :param Sigma1: Standard deviation along the first principal axis
-    :param Sigma2: Standard deviation along the second principal axis
-    :param Psi: Rotation angle between ecliptic longitude/latitude and principal axes
+    :param Sigma1: squared of Standard deviation along the first principal axis
+    :param Sigma2: squared of Standard deviation along the second principal axis
+    :param sinPsi: Sine of the angle between the two principal axes
     :param LISA_Orbital_Freq: orbital frequency of LISA barycenter (1 / year)
     :param t: time
     :param alpha0: initial phase of LISA barycenter
@@ -29,10 +29,9 @@ def envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigma2, Psi,
     SigmaSqSum = Sigma1 + Sigma2
     SigmaSqDiff = Sigma1 - Sigma2
 
-    sin2Psi = Psi
-    cos2Psi = np.sqrt(1. - sin2Psi * sin2Psi)
-    SigmaSqCos = SigmaSqDiff * cos2Psi
-    SigmaSqSin = SigmaSqDiff * sin2Psi
+    cosPsi = np.sqrt(1. - sinPsi * sinPsi)
+    SigmaSqCos = SigmaSqDiff * cosPsi
+    SigmaSqSin = SigmaSqDiff * sinPsi
     SigmaSqPlus = SigmaSqSum + SigmaSqCos
 
     fact1b0 = np.exp(-0.25 * SigmaSqPlus)
