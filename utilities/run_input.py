@@ -106,12 +106,16 @@ def chunk_data(chunk_T, n_chunks, nseg, A, E, t, path):
     chunk_ind = np.linspace(1, n_chunks, n_chunks, dtype=int)
 
     dt = t[1] - t[0]
-    point = chunk_T / dt
+    point = chunk_T // dt
     tot_point = int(point * n_chunks)
 
     Achunk = np.split(A[:tot_point], n_chunks)
     Echunk = np.split(E[:tot_point], n_chunks)
     chunk_t_arr = np.split(t[:tot_point], n_chunks)
+    #get chunk start and end times
+    T1 = [chunk_t_arr[i][0][0] for i in range(n_chunks)]
+    T2 = [chunk_t_arr[i][-1][0] for i in range(n_chunks)]
+    
 
     freqs = np.arange(0, 1 / (2 * dt) + 1 / chunk_T, 1 / chunk_T)
     window = np.kaiser(chunk_t_arr[0].size, beta=30)  
@@ -164,6 +168,10 @@ def chunk_data(chunk_T, n_chunks, nseg, A, E, t, path):
             group.create_dataset('freq', data=np.array(freq_chunk, dtype=np.float64))
             group.create_dataset('count', data=np.array(count_chunk, dtype=np.int32))
 
+    # Save start and end times of each chunk in txt
+    np.savetxt(f'{path}/time_interval.txt',  [T1, T2])
+    logger.info(f'Chunked data saved to {path}/data.h5 and {path}/data_av.h5')
+    
     return None
 
 
