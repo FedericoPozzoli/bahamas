@@ -17,6 +17,8 @@ The package includes two main command-line interfaces:
 
   - `bahamas_inference`: Parameter estimation and minimal diagnostics
 
+  - `bahamas_input`: From LISA data challange dataset (e.g. yorsh) to bahamas
+
 Both scripts require two input files:
 
   - `--config config.yaml`: Specifies the simulation and inference settings, sampler configuration, and output paths.
