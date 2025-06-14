@@ -8,7 +8,7 @@ The function `envelopes_gaussian` computes the envelopes based on the provided p
 import numpy as np
 
 
-def envelopes_gaussian(SinEclipticLatitude, EclipticLongitude, Sigma1, Sigma2, sinPsi, LISA_Orbital_Freq, t, alpha0 = 0., beta0 = 0.):
+def envelopes_gaussian(EclipticLatitude, EclipticLongitude, Sigma1, Sigma2, sinPsi, LISA_Orbital_Freq, t, alpha0 = 0., beta0 = 0.):
     """
     Returns the envelopes of the A and E signals for sources centered at the given sky position,
     averaged over inclination and polarization, with some gaussian distribution with given
