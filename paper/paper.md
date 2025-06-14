@@ -41,7 +41,7 @@ In this article, we introduce `bahamas`, a tool designed to address some of thes
 
 # Statement of need
 
-The main idea behind the global fit algorithm is to use a Blocked Gibbs sampling technique to jointly analyze different GW sources, including stochastic backgrounds, instrumental noise, and the galactic foreground. LISA is expected to sample data at $\sim 5\mathrm{s}$, with a nominal mission duration of four years. This results in an extremely large dataset for a full-band analysis of the stochastic components. Consequently, computational cost becomes a significant concern for the stochastic sector. Traditional sampling techniques, such as nested sampling or standard Markov Chain Monte Carlo (MCMC), might become prohibitively slow for this task. To address this issue, `bahamas` employs the No-U-Turn Sampler (NUTS) [@Hoffman:2011], an adaptive variant of Hamiltonian MCMC, which significantly enhances sampling efficiency. It uses the implementation provided by NumPyro [@Phan:2019], which is totally based in JAX, enabling possibly convenient migration to GPU/TPU architectures GPU/TPU architecture [@Bradbury:2018]. 
+The main idea behind the global fit algorithm is to use a Blocked Gibbs sampling technique to jointly analyze different GW sources, including stochastic backgrounds, instrumental noise, and the galactic foreground. LISA is expected to sample data at $\sim 5\mathrm{s}$, with a nominal mission duration of four years. This results in an extremely large dataset for a full-band analysis of the stochastic components. Consequently, computational cost becomes a significant concern for the stochastic sector. Traditional sampling techniques, such as nested sampling or standard Markov Chain Monte Carlo (MCMC), might become prohibitively slow for this task. To address this issue, `bahamas` employs the No-U-Turn Sampler (NUTS) [@Hoffman:2011], an adaptive variant of Hamiltonian Monte Carlo (HMC), which significantly enhances sampling efficiency. It uses the implementation provided by NumPyro [@Phan:2019], which is totally based in JAX, enabling possibly convenient migration to GPU/TPU architectures GPU/TPU architecture [@Bradbury:2018]. 
 
 The reconstruction of the Galactic foreground is particularly challenging also due to its non-stationarity. Specifically, the Galactic foreground behaves as a cyclostationary process—a stochastic process with time-dependent periodic properties. This arises from the coupling between the highly anisotropic distribution of unresolved WDs in the Galaxy and the annually varying antenna pattern of LISA.  The overlap of unresolved signals from a well-defined sky region results in a modulated stochastic signal in the time domain.
 
@@ -74,7 +74,7 @@ The algorithm provides flexibility to perform analyses with either full-resoluti
 
 Below, we present a comparison of posterior probability reconstruction between HMC and nessai, both implemented in `bahamas`. In this example, we reconstruct the galactic foreground spectrum and modulation alongside LISA instrumental noise. The computational cost between the two approaches may vary depending on simulation settings. For one year of data analyzed with two-week chunk durations, the speed-up achieved is approximately a factor of 10.
 
-![Caption for the figure](joss_corner.png)
+![Posterior probability reconstruction of the spectrum and modulation for the galactic foreground and LISA noise, as obtained using HMC and nested sampling.](joss_corner.png)
 
 # Outlooks
 
