@@ -35,8 +35,8 @@ bibliography: paper.bib
 
 # Summary
 
-The Laser Interferometer Space Antenna (LISA) [@LISA:2018] is a forthcoming space-based mission designed to detect gravitational waves (GWs) of both astrophysical and cosmological origin in the milli-hertz frequency band. LISA consists of a constellation of three spacecraft arranged in a quasi-equilateral triangular configuration with an arm length of approximately $L \sim 2.5 \times 10^6 , \rm{km}$. The constellation orbits the Sun while trailing the Earth. Each spacecraft is equipped with two telescopes and two lasers, enabling precise monitoring of the distances between the test masses housed within each spacecraft.
-LISA is expected to observe thousands of white dwarf (WD) binaries within the Milky Way simultaneously, while the unresolved population of such binaries will overlap incoherently, forming the so-called galactic foreground.
+The Laser Interferometer Space Antenna (LISA) [@LISA:2018] is a forthcoming space-based mission designed to detect gravitational waves (GWs). LISA consists of a constellation of three spacecraft arranged in a quasi-equilateral triangular configuration with an arm length of approximately $L \sim 2.5 \times 10^6 , \rm{km}$. The constellation orbits the Sun while trailing the Earth. Each spacecraft is equipped with two telescopes and two lasers, enabling precise monitoring of the distances between the test masses housed within each spacecraft. Given the mission design, LISA is sensitive to GW in the milli-hertz frequency band.
+In particular, LISA is expected to observe thousands of white dwarf (WD) binaries within the Milky Way simultaneously, while the unresolved population of such binaries will overlap incoherently, forming the so-called galactic foreground.
 One of the central challenges of the so-called global fit [@Katz:2025] is to jointly model both the resolvable and unresolvable WD populations. In particular, reconstructing the galactic foreground is extremely difficult due to both computational and modeling complexities.
 In this article, we introduce `bahamas`, a tool designed to address some of these challenges from a global fit perspective. Additionally, we emphasize that accurately modeling the galactic foreground also has applications in preliminary low-latency detection of massive black hole binaries [@Cornish:2022], which are crucial sources for multimessenger astronomy [@Baker:2019].
 
@@ -63,7 +63,7 @@ Both scripts require two input files:
   - `--sources sources.yaml`: Defines the sources to be injected and/or recovered. This includes the true physical parameters of the sources as well as the prior ranges used for inference.
 
 The data consist of two datastreams—the A and E channels—which are specific combinations of Time-Delay Interferometry (TDI) variables [@Tinto:2021]. In `bahamas`, data are generated in the frequency domain, chunk by chunk. The duration of each chunk—and consequently the frequency resolution—can be configured via config.yaml. However, we recommend not using time lengths shorter than $10^4 \mathrm{s}$, which corresponds to a frequency resolution of approximately $\Delta f \sim 0.1 \mathrm{mHz}$, below which the characterization of LISA instrumental noise is not guaranteed.  
-The instrumental noise model is defined by a two-parameter template that characterizes the amplitudes of LISA's two primary noise components: the Test Mass (TM) noise and the Optical Metrology System (OMS) noise, both of which follow predefined spectral shapes [@LISA:2017]. 
+The noise model is defined by a two-parameter template that characterizes the amplitudes of  two primary instrumental noise  sources: the Test Mass (TM) noise and the Optical Metrology System (OMS) noise, both of which follow predefined spectral shapes [@LISA:2017]. 
 
 The algorithm also allows for the analysis of stationary, isotropic, and Gaussian stochastic process (e.g., a signal characterized by a power-law power spectral density), enabling the evaluation of the impact of multiple overlapping sources.
 
@@ -95,7 +95,7 @@ The cyclostationarity associated with the galactic foreground is not the only so
 
 **TDI Correlations**
 
-Unequal arm lengths introduces also correlation between different TDI channels. These correlations can be accounted for in data analysis under the assumption of stationarity, as they appear as additional off-diagonal terms in the covariance matrix at each frequency [@Hartwig:2023]. However, such correlations have not yet been explored or modeled for the galactic foreground scenario. In future work, we plan to include a correlation matrix for stationary signal and noise and assess the impact of correlations in the non-stationary case.
+Unequal arm length introduces also correlation between different TDI channels. These correlations can be accounted for in data analysis under the assumption of stationarity, as they appear as additional off-diagonal terms in the covariance matrix at each frequency [@Hartwig:2023]. However, such correlations have not yet been explored or modeled for the galactic foreground scenario. In future work, we plan to include a correlation matrix for stationary signal and noise and assess the impact of correlations in the non-stationary case.
 
 # Acknowledgements
 
