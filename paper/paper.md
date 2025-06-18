@@ -35,7 +35,8 @@ bibliography: paper.bib
 
 # Summary
 
-The Laser Interferometer Space Antenna (LISA) [@LISA:2018] is an upcoming space-based mission designed to detect gravitational waves (GWs) of both astrophysical and cosmological origin in the milli-hertz band. LISA is expected to observe thousands of white dwarf (WD) binaries within the Milky Way simultaneously, while the unresolved population of such binaries will overlap incoherently, forming the so-called galactic foreground.
+The Laser Interferometer Space Antenna (LISA) [@LISA:2018] is a forthcoming space-based mission designed to detect gravitational waves (GWs) of both astrophysical and cosmological origin in the milli-hertz frequency band. LISA consists of a constellation of three spacecraft arranged in a quasi-equilateral triangular configuration with an arm length of approximately $L \sim 2.5 \times 10^6 , \rm{km}$. The constellation orbits the Sun while trailing the Earth. Each spacecraft is equipped with two telescopes and two lasers, enabling precise monitoring of the distances between the test masses housed within each spacecraft.
+LISA is expected to observe thousands of white dwarf (WD) binaries within the Milky Way simultaneously, while the unresolved population of such binaries will overlap incoherently, forming the so-called galactic foreground.
 One of the central challenges of the so-called global fit [@Katz:2025] is to jointly model both the resolvable and unresolvable WD populations. In particular, reconstructing the galactic foreground is extremely difficult due to both computational and modeling complexities.
 In this article, we introduce `bahamas`, a tool designed to address some of these challenges from a global fit perspective. Additionally, we emphasize that accurately modeling the galactic foreground also has applications in preliminary low-latency detection of massive black hole binaries [@Cornish:2022], which are crucial sources for multimessenger astronomy [@Baker:2019].
 
@@ -45,7 +46,7 @@ The main idea behind the global fit algorithm is to use a Blocked Gibbs sampling
 
 The reconstruction of the Galactic foreground is particularly challenging also due to its non-stationarity. Specifically, the Galactic foreground behaves as a cyclostationary process—a stochastic process with time-dependent periodic properties. This arises from the coupling between the highly anisotropic distribution of unresolved WDs in the Galaxy and the annually varying antenna pattern of LISA.  The overlap of unresolved signals from a well-defined sky region results in a modulated stochastic signal in the time domain.
 
-Similarly to other works [@Rosati:2024], we adopt a time-frequency approach by analyzing chunked data segments. While the chunking procedure mitigates non-stationarity, it does not account for variations in spectral amplitude within chunks caused by modulation. [@Digman:2022] addresses this by introducing a phenomenological template that models the amplitude modulation as a superposition of sinusoidal forms.
+Similar to other works [@Rosati:2024], we use the Short-Time Fourier Transform likelihood to analyze data in chunked segments. While the chunking procedure mitigates non-stationarity, it does not account for variations in spectral amplitude within chunks caused by modulation. [@Digman:2022] addresses this by introducing a phenomenological template that models the amplitude modulation as a superposition of sinusoidal forms.
 Instead, `bahamas` incorporates the modulation model proposed in [@Buscicchio:2024]. The main idea behind this approach is to model the modulation as arising from a Gaussian distribution in the sky. The key advantage of this method is providing a modulation model that is both analytical and computationally efficient to evaluate, enabling simultaneous inference of not only the spectral parameters but also the sky distribution properties from the modulation.
 
 # Software Description 
@@ -61,13 +62,14 @@ Both scripts require two input files:
 
   - `--sources sources.yaml`: Defines the sources to be injected and/or recovered. This includes the true physical parameters of the sources as well as the prior ranges used for inference.
 
-The data consist of two datastreams—the A and E channels—which are specific combinations of Time-Delay Interferometry (TDI) variables [@Tinto:2021]. In `bahamas`, the data are generated in the frequency domain, chunk by chunk. This represents a simplification, as it neglects potential biases arising in the time domain, such as windowing effects and spectral leakage.  The duration of each chunk—and consequently the frequency resolution—can be configured via config.yaml. However, we recommend not using time lengths shorter than $10^4 \mathrm{s}$, which corresponds to a frequency resolution of approximately $\Delta f \sim 0.1 \mathrm{mHz}$, below which the characterization of LISA's instrumental noise is not guaranteed.  
+The data consist of two datastreams—the A and E channels—which are specific combinations of Time-Delay Interferometry (TDI) variables [@Tinto:2021]. In `bahamas`, data are generated in the frequency domain, chunk by chunk. The duration of each chunk—and consequently the frequency resolution—can be configured via config.yaml. However, we recommend not using time lengths shorter than $10^4 \mathrm{s}$, which corresponds to a frequency resolution of approximately $\Delta f \sim 0.1 \mathrm{mHz}$, below which the characterization of LISA instrumental noise is not guaranteed.  
+The instrumental noise model is defined by a two-parameter template that characterizes the amplitudes of LISA's two primary noise components: the Test Mass (TM) noise and the Optical Metrology System (OMS) noise, both of which follow predefined spectral shapes [@LISA:2017]. 
 
-The algorithm also allows for the analysis of stationary, isotropic, and Gaussian stochastic process (e.g., a signal characterized by a power-law power spectral density), enabling the evaluation of the impact of multiple overlapping sources in presence of the LISA instrumental noise.
+The algorithm also allows for the analysis of stationary, isotropic, and Gaussian stochastic process (e.g., a signal characterized by a power-law power spectral density), enabling the evaluation of the impact of multiple overlapping sources.
 
 We also provide the option to include data gaps, which represent periods during the mission when no useful data are available. These gaps can occur due to scheduled maintenance (scheduled gaps) or unforeseen hardware issues (unscheduled gaps). The goal of `bahamas` is not to mitigate the impact of these interruptions but rather to characterize their effect on the reconstruction of stochastic signals.
 
-The algorithm provides flexibility to perform analyses with either full-resolution data or coarse-grained data over different chunks. In the former case, the likelihood describing the data follows a Whittle distribution [@Moran:1951] in each segment, while in the latter, it collapses to a Gamma distribution [@Appourchaux:2003] with degrees of freedom equal to the number of bins used in the averaging process.
+The algorithm is flexible to perform analyses with either full-resolution data or coarse-grained data over different chunks. In the former case, the likelihood describing the data follows a Whittle distribution [@Moran:1951] in each segment, while in the latter, it collapses to a Gamma distribution [@Appourchaux:2003] with degrees of freedom equal to the number of bins used in the averaging process.
 
 
 # Performance
@@ -87,9 +89,13 @@ Currently, `bahamas` also supports posterior probability exploration via nested 
 
 Uncertainties in both the stochastic signal and the instrumental noise are expected for LISA, not only in their overall amplitude but also in their spectral shapes. For example, variations in the astrophysical modeling of white dwarf populations can lead to fluctuations in the shape of the Galactic foreground spectrum. Similarly, incorporating more realistic noise components can introduce additional complexity. To address these shape uncertainties, we plan to integrate the Expectation value of a Gaussian Process (EGP) method, developed in [@Pozzoli:2024], as an example of a flexible parametrization.
 
+**Other Non-stationarity**
+
+The cyclostationarity associated with the galactic foreground is not the only source of non-stationarity in the LISA datastreams. Due to its actual orbit, LISA arm lengths will be unequal and vary over time. This effect introduces second-order non-stationarity in both the galactic signal and the instrumental noise. At present, `bahamas` is not designed to address this issue, but further investigations on this topic are planned.
+
 **TDI Correlations**
 
-Correlation between different TDI channels is expected due to the realistic configuration of the LISA constellation, such as unequal arm lengths. These correlations can be accounted for in data analysis under the assumption of stationarity, as they appear as additional off-diagonal terms in the covariance matrix at each frequency [@Hartwig:2023]. However, such correlations have not yet been explored or modeled for the galactic foreground scenario. In future work, we plan to include a correlation matrix for stationary signal and noise and assess the impact of correlations in the non-stationary case.
+Unequal arm lengths introduces also correlation between different TDI channels. These correlations can be accounted for in data analysis under the assumption of stationarity, as they appear as additional off-diagonal terms in the covariance matrix at each frequency [@Hartwig:2023]. However, such correlations have not yet been explored or modeled for the galactic foreground scenario. In future work, we plan to include a correlation matrix for stationary signal and noise and assess the impact of correlations in the non-stationary case.
 
 # Acknowledgements
 
