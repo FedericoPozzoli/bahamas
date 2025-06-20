@@ -41,7 +41,8 @@ year = 31557600.0  # Seconds in a year
 @jit
 def Omega_pl(freqs, par):
     """"
-    power-law model for gravitational wave signal.
+    Power-law model for gravitational wave signal.
+
     Args:
         freqs (array): Frequency array.
         par (dict): Parameters for the model.
@@ -66,6 +67,7 @@ def Omega_extra_foreground(freqs, par):
     """
     Extra galactic foreground of white dwarf binaries.
     https://arxiv.org/abs/2407.10642
+    
     Args:
         freqs (array): Frequency array.
         par (dict): Parameters for the model.
@@ -90,6 +92,7 @@ def galactic_foreground(freqs, par, injected = False, gen2=False):
     """
     Galactic foreground of white dwarf binaries.
     https://arxiv.org/abs/2103.14598
+
     Args:
         freqs (array): Frequency array.
         par (dict): Parameters for the model.
@@ -147,6 +150,7 @@ def galactic_foreground_time(freqs, par, injected=False, t1=0, t2=0, tdi=0, gen2
     """
     Galactic foreground model for gravitational wave signal with time dependence.
     https://arxiv.org/abs/2410.08274, https://arxiv.org/abs/2410.08263
+
     Args:
         freqs (array): Frequency array.
         injected (bool): If True, uses injected parameters.

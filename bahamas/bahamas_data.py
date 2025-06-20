@@ -19,26 +19,18 @@ Usage:
 from bahamas.psd_strain import psd_function as psd
 from bahamas.psd_response import response as resp
 from bahamas.method import gaps
+from bahamas.logger_config import logger
 
 import matplotlib.pylab as plt
 import numpy as np
 import yaml
 import argparse
-import logging
+
 import h5py
 import os
 import sys
 
 # Configure logger
-logger = logging.getLogger('BAHAMAS')
-logger.setLevel(logging.DEBUG)
-
-# Add a console handler with formatting
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
 
 def get_first_part(path: str) -> str:
     """
@@ -264,7 +256,7 @@ class SignalProcessor:
             data_chunk_tdi, data_chunk_tdi_av, response_tdi_av = [], [], []
             for ind_tdi in range(self.ntdi):
                 psd_tdi, _ = psd.model_psd(freqs, sources=self.sources, response=response_tdi[ind_tdi], injected=True, t1=self.T1[i], t2=self.T2[i], tdi=i, gen2 = self.gen2)
-                _, _tdi = GP_freq(freqs, self.dt, psd=psd_tdi, seed=np.random.randint(0, 1000))
+                _, _tdi = GP_freq(freqs, self.dt, psd=psd_tdi, seed=np.random.randint(0, 1e6))
                 data_chunk_tdi.append(_tdi)
 
                 if self.config['mod'] == 'lin':

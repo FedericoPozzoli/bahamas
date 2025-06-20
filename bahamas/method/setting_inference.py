@@ -18,6 +18,7 @@ Dependencies:
 """
 from bahamas.method import setting_hmc
 from bahamas.method import setting_nessai 
+from bahamas.logger_config import logger
 
 import numpy as np
 import h5py
@@ -61,7 +62,7 @@ def read_data(config):
 
     with h5py.File(file_path, 'r') as f:
         nchunk = len(f)
-        print(f'Number of chunks: {nchunk}')
+        logger.info(f'Number of chunks: {nchunk}')
         for i in range(nchunk):
             chunk_name = f'chunk_{i+1}'
             group = f[chunk_name]

@@ -3,6 +3,7 @@ This module handles the initialization and management of the computational backe
 for the BAHAMAS framework. It supports both JAX and NumPy backends.
 """
 import os
+from bahamas.logger_config import logger
 # Global variables to store backend components
 np = None
 jit = None
@@ -27,8 +28,9 @@ def initialize_backend(use_jax=True, force_reinitialize=False):
     _backend_initialized = True
     # Set the backend globally
     
-    print(f"Backend initialized with {'JAX' if use_jax else 'NumPy'}")
-    print(f"np is from: {np.__name__}")
+    logger.info(f"Using {'JAX' if use_jax else 'NumPy'} backend.")
+    logger.info(f"np is from: {np.__name__}")
+
 
 def get_backend_components():
     """

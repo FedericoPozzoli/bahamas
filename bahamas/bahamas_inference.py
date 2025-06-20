@@ -19,6 +19,7 @@ Usage:
 
 from bahamas.method import setting_inference
 from bahamas.method import setting_nessai
+from bahamas.logger_config import logger
 
 import numpy as np
 import jax
@@ -31,22 +32,9 @@ import matplotlib.pyplot as plt
 import corner
 import os
 
-import logging
 
 # Enable 64-bit precision in NumPyro
 numpyro.enable_x64()
-
-# Set up logging
-logger = logging.getLogger('BAHAMAS_Inference')
-logger.setLevel(logging.DEBUG)
-
-# Add a console handler with formatting
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)  # Change to DEBUG to see debug messages
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
-
 
 def get_last_part(path: str) -> str:
     """
@@ -119,7 +107,7 @@ class Method:
             sampler_kwargs = {key: self.config['inference'][key] for key in keys if key in sampler_opts}
 
             # Filtering
-            print(f"Passing the following kwargs: {sampler_kwargs}")
+            logger.info(f"Passing the following kwargs: {sampler_kwargs}")
             model = setting_nessai.nessai_model(self.log_like, **self.kwargs)
             name = get_first_part(self.config['inference']['file_post'])
             self.method = FlowSampler(model, resume=False, output=name, **sampler_kwargs, )
