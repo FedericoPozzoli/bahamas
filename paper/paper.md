@@ -9,10 +9,10 @@ authors:
   - name: Federico Pozzoli
     orcid: 0009-0009-6265-584X
     corresponding: true # (This is how to denote the corresponding author)
-    affiliation: "1";"2" # (Multiple affiliations must be quoted)
+    affiliation: "1, 2" # (Multiple affiliations must be quoted)
   - name: Riccardo Buscicchio
     orcid: 0000-0002-7387-6754
-    affiliation: "2";"3";"4"
+    affiliation: "2, 3, 4"
     orcid: 
   - name: Antoine Klein
     orcid: 0000-0001-5438-9152
