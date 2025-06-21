@@ -9,22 +9,28 @@ authors:
   - name: Federico Pozzoli
     orcid: 0009-0009-6265-584X
     corresponding: true # (This is how to denote the corresponding author)
-    affiliation: 1 # (Multiple affiliations must be quoted)
+    affiliation: "1";"2" # (Multiple affiliations must be quoted)
   - name: Riccardo Buscicchio
-    affiliation: 2
+    orcid: 0000-0002-7387-6754
+    affiliation: "2";"3";"4"
+    orcid: 
   - name: Antoine Klein
-    affiliation: 3
+    orcid: 0000-0001-5438-9152
+    affiliation: "4"
   - name: Daniele Chirico
-    affiliation: 2
+    orcid: 0009-0007-0253-6959
+    affiliation: "2"
 affiliations:
- - name: Università degli studi dell'Insubria, Italy
+ - name: Dipartimento di Scienza e Alta Tecnologia, Università dell'Insubria, via Valleggio 11, I-22100 Como, Italy
    index: 1
    ror: 00hx57361
- - name: Università degli studi Milano-Bicocca, Italy
+ - name: Dipartimento di Fisica "G. Occhialini", Università degli Studi di Milano-Bicocca, Piazza della Scienza 3, 20126 Milano, Italy
    index: 2
- - name: Universitity of Birmingham
-   index: 3
-date: 12 June 2025
+ - name: INFN, Sezione di Milano-Bicocca, Piazza della Scienza 3, 20126 Milano, Italy
+   index: 3 
+ - name: Institute for Gravitational Wave Astronomy & School of Physics and Astronomy, University of Birmingham, Birmingham, B15 2TT, UK
+   index: 4
+date: 21 June 2025
 bibliography: paper.bib
 
 # Optional fields if submitting to a AAS journal too, see this blog post:
