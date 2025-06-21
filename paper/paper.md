@@ -13,7 +13,6 @@ authors:
   - name: Riccardo Buscicchio
     orcid: 0000-0002-7387-6754
     affiliation: "2, 3, 4"
-    orcid: 
   - name: Antoine Klein
     orcid: 0000-0001-5438-9152
     affiliation: "4"
