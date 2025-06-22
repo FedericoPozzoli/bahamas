@@ -16,7 +16,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: paper.pdf
-          path: pdf/paper.pdf
+          path: paper/paper.pdf
 
   scrub-metadata:
     runs-on: ubuntu-latest
@@ -27,14 +27,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: paper.pdf
-          path: ./pdf
+          path: ./paper
       - name: Scrub Metadata
         run: |
           sudo apt-get update
           sudo apt-get install -y libimage-exiftool-perl
-          exiftool -all= -r -overwrite_original -ext pdf ./pdf
+          exiftool -all= -r -overwrite_original -ext pdf ./paper
       - name: Upload scrubbed PDF
         uses: actions/upload-artifact@v4
         with:
           name: paper.pdf
-          path: ./pdf/paper.pdf
+          path: ./paper/paper.pdf
