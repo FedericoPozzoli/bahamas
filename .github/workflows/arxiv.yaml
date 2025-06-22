@@ -3,28 +3,12 @@ on: [push]
 jobs:
   paper:
     runs-on: ubuntu-latest
-    name: Paper Draft
+    container:
+      image: openjournals/inara:latest
+    env:
+      GIT_SHA: $GITHUB_SHA
+      JOURNAL: 'joss'
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: TeX and PDF
-        uses: docker://openjournals/paperdraft:latest
-        with:
-          args: '-k paper/paper.md'
-          paper-path: paper/paper.md
-        env:
-          GIT_SHA: $GITHUB_SHA
-          JOURNAL: joss
-      - name: Replace logo path in paper.tex
-        run: |
-          sed -i 's|/usr/local/share/openjournals/joss/logo.png|./logo.png|g' paper/paper.tex
-      # Add additional small fixes to the paper.tex below if needed.
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: paper
-          # This is the output path where Pandoc will write the compiled
-          # PDF. Note, this should be the same directory as the input
-          # paper.md
-          path: paper/
-          
+      - uses: actions/checkout@v4
+      - name: Build PDF
+        run: inara -p -o pdf ./paper/paper.md
