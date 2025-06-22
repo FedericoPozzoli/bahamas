@@ -12,8 +12,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build PDF
         run: inara -p -o pdf ./paper/paper.md
-      - name: Upload PDF artifact
+      - name: Remove PDF metadata
+        run: |
+          apt-get update && apt-get install -y exiftool
+          exiftool -all= ./paper/paper.pdf
+          rm -f ./paper/paper.pdf_original
+      - name: Upload PDF
         uses: actions/upload-artifact@v4
         with:
-          name: paper-pdf
-          path: ./paper/paper.pdf
+          name: paper.pdf
