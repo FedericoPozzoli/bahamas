@@ -12,3 +12,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build PDF
         run: inara -p -o pdf ./paper/paper.md
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-pdf
+          path: ./paper/paper.pdf
