@@ -33,8 +33,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libimage-exiftool-perl
           exiftool -all= -r -overwrite_original -ext pdf ./paper
+      - name: Move scrubbed PDF
+        run: |
+          mkdir -p ./paper
+          mv ./paper/paper.pdf ./paper/paper-clean.pdf
       - name: Upload scrubbed PDF
         uses: actions/upload-artifact@v4
         with:
-          name: paper.pdf
-          path: ./paper/paper.pdf
+          name: paper-clean.pdf
+          path: ./paper/paper-clean.pdf
