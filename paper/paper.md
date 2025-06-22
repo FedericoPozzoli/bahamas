@@ -105,7 +105,7 @@ Unequal arm length introduces also correlation between different TDI channels. T
 
 # Acknowledgements
 
-The authors thank A. Sesana, A.Klein, A.Vecchio, R.Meyer for useful comments.
+The authors thank A. Sesana, C. J. Moore, A.Vecchio, R.Meyer for useful comments.
 RB acknowledges support from the ICSC National Research Center funded by NextGenerationEU, and the Italian Space Agency grant Phase B2/C activity for LISA mission, Agreement n.2024-NAZ-0102/PER.
 Computational work was performed at Bicocca's Akatsuki cluster (B Massive funded).
 
