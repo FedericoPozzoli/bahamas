@@ -22,16 +22,7 @@ import logging
 # Enable 64-bit precision in NumPyro
 numpyro.enable_x64()
 
-# Set up logging
-logger = logging.getLogger('BAHAMAS_input')
-logger.setLevel(logging.DEBUG)
-
-# Add a console handler with formatting
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)  # Change to DEBUG to see debug messages
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
+from bahamas.logger_config import logger
 
 
 def AET(X,Y,Z):

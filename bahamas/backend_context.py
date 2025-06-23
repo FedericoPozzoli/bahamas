@@ -20,7 +20,7 @@ def initialize_backend(use_jax=True, force_reinitialize=False):
     """
     global np, jit, lax, _backend_initialized
     if _backend_initialized and not force_reinitialize:
-        print(f"Backend already initialized. np is from: {np.__name__}")
+        logger.info("Backend already initialized. Use force_reinitialize=True to reinitialize.")
         return  # Prevent reinitialization unless forced
 
     from bahamas.backend import get_backend

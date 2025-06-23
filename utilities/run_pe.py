@@ -18,16 +18,7 @@ from bahamas.backend_context import initialize_backend
 import logging
 from distutils.util import strtobool
 
-# Set up logging
-logger = logging.getLogger('BAHAMAS_Inference')
-logger.setLevel(logging.DEBUG)
-
-# Add a console handler with formatting
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)  # Change to DEBUG to see debug messages
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
+from bahamas.logger_config import logger
 
 def main():
     # Set up argument parser

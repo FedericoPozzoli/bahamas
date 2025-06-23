@@ -362,7 +362,7 @@ class SignalProcessor:
             for j in range(len(self.T1)):
                 ft = np.insert(self.data[j][0], 0, 0)
                 ift = np.fft.irfft(ft)
-                print(f'T1: {self.T1[j]}, T2: {self.T2[j]}')
+                logger.info(f'Chunk {j+1} start: {self.T1[j]}, end: {self.T2[j]}')
                 plt.plot(np.linspace(self.T1[j], self.T2[j], len(ift))[:-1], ift[:-1], rasterized=True, color='teal', alpha=0.3)
             plt.savefig(f'{name_folder}mod_gal.png', bbox_inches='tight')
 

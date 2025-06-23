@@ -12,9 +12,8 @@ from bahamas.backend_context import get_backend_components
 # Load backend components after backend initialization
 jnp, jit, lax = get_backend_components()
 
-#import jax.numpy as jnp
-#from jax import lax
-#import jax
+if jnp is None:
+    import numpy as jnp
 
 if lax is not None:
     import jax
@@ -42,8 +41,8 @@ def average_envelopes_gaussian(SinEclipticLatitude, EclipticLongitude, Sigma1, S
     SigmaSqDiff = Sigma1  - Sigma2 
 
     cosPsi = jnp.sqrt(1 - sinPsi**2)
-    SigmaSqCos = SigmaSqDiff * cosPsi#jnp.cos(2. * Psi)
-    SigmaSqSin = SigmaSqDiff * sinPsi#jnp.sin(2. * Psi)
+    SigmaSqCos = SigmaSqDiff * cosPsi
+    SigmaSqSin = SigmaSqDiff * sinPsi
     SigmaSqPlus = SigmaSqSum + SigmaSqCos
 
     fact1b0 = jnp.exp(-0.25 * SigmaSqPlus)

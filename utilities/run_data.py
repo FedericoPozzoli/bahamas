@@ -12,16 +12,7 @@ from bahamas.backend_context import initialize_backend
 initialize_backend(use_jax=True)  # Initialize backend with JAX
 from bahamas import bahamas_data
 
-# Configure logger
-logger = logging.getLogger('BAHAMAS')
-logger.setLevel(logging.DEBUG)
-
-# Add a console handler with formatting
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-console_handler.setFormatter(formatter)
-logger.addHandler(console_handler)
+from bahamas.logger_config import logger
 
 def main():
     parser = argparse.ArgumentParser(description='Run BAHAMAS data processing pipeline')
