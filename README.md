@@ -33,6 +33,12 @@ We also provide the option to include data gaps, which represent periods during 
 
 The algorithm provides flexibility to perform analyses with either full-resolution data or coarse-grained data over different chunks. In the former case, the likelihood describing the data follows a [Whittle](https://api.semanticscholar.org/CorpusID:125739077) distribution in each segment, while in the latter, it collapses to a [Gamma](https://www.aanda.org/articles/aa/pdf/2003/49/aa0401.pdf) distribution with degrees of freedom equal to the number of bins used in the averaging process.
 
+## Sources
+
+This plot shows the types of signals you can simulate using `bahamas`. The galactic foreground can be generated and analyzed in both stationary and non-stationary assumption.
+
+![SGWB Landscape in bahamas](data/lisa_landscape_bahamas.png)
+
 ## Installation
 
 You can install BAHAMAS via pip:
