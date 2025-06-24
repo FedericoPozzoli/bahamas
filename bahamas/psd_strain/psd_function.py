@@ -76,13 +76,12 @@ def Omega_extra_foreground(freqs, par):
     """
     a = par['a']
     b = par['b']
-	
-    gamma1 = 0.741
-    f_b = 7.2e-3
-    gamma2 = -0.255
-    gamma3 = 3 
+    gamma1 = par['gamma1']
+    gamma2 = par['gamma2']
 
-    Omega =  10**a*(freqs/f_b)**gamma1 * (1 + (freqs/f_b)**4.15)**gamma2 * jnp.exp(-10**b*freqs**gamma3)
+    f_b = 7.2e-3
+
+    Omega =  10**a*(freqs/f_b)**gamma1 * (1 + (freqs/f_b)**4.15)**gamma2 * jnp.exp(-10**b*freqs**3)
     S_h = Omega* (3*H02) / (4*jnp.pi**2*freqs**3)
 	
     return S_h

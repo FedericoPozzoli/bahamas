@@ -87,9 +87,7 @@ def phase(SC, freqs, t, khat, link):
         array-like: Phase response as a function of frequency.
     """
     ind = [0,1,2,2,1,0]
-    #li = [1,2,3,3,2,1]
 
-    #mySC = orb.SpacecraftOrbit()
     pos = SC.SC_positions(t)
     
     if link > 0:
@@ -100,8 +98,7 @@ def phase(SC, freqs, t, khat, link):
         xr = int(ind[-link])
     __, L = SC.link_versor(t,link)
     
-    #phase = -np.pi*frequency*(L + np.dot(khat,(pos[xs] + pos[xr])))
-    #return complex(np.cos(phase),np.sin(phase))
+
     return np.exp(-1j*np.pi*freqs*(L + np.dot(khat,(pos[xs] + pos[xr])))) 
     
 def fract_freq(SC, freqs, t, khat, link):
@@ -231,15 +228,15 @@ class SGWBResponseStationary():
             ### Easy to parallelize using multiprocessing.map.
             y = self.pixelsize*((0.5*antenna_pattern(self.SC, self.t,k,l, p)*
                                phase(self.SC, self.freqs, self.t, k,l)*
-                               sinc(self.SC, self.freqs, self.t, k,l)*
+                               sinc(self.SC, self.freqs, self.t, k,l) *
                                 fract_freq(self.SC, self.freqs, self.t, k,l)
                                )*
                                np.conjugate(
                                    (0.5*antenna_pattern(self.SC, self.t,k,lp, p)*
                                     phase(self.SC,self.freqs, self.t, k,lp)*
-                                    sinc(self.SC, self.freqs, self.t, k,lp))*
+                                    sinc(self.SC, self.freqs, self.t, k,lp)) *
                                     fract_freq(self.SC, self.freqs, self.t, k,lp)
-                                    )
+                                    ) / (4 * np.pi)
             )
 
             GbarGbarConjK += y                          
