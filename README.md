@@ -39,6 +39,13 @@ This plot shows the types of signals you can simulate using `bahamas`. The galac
 
 ![SGWB Landscape in bahamas](data/lisa_landscape_bahamas.png)
 
+## Notebooks
+In the `data` folder, you can find two example notebooks:
+
+- `example_bahamas`: A minimal example demonstrating how to use bahamas.
+
+- `example_modulation`: This notebook shows how the modulation model implemented in bahamas accounts for the non-stationarity of the galactic foreground. Feel free to play with the parameters and observe how the modulation changes!
+
 ## Installation
 
 You can install BAHAMAS via pip:
