@@ -1,22 +1,52 @@
 # This is a template for the list of sources to provide to the bahamas-inference
 # accounting for stationary galacatic foreground. 
 sources:
-#  galactic_DWD: 
-#    - name: "alpha"
-#      bounds:  [1., 2.]
-#      injected: 1.62966700
-#    - name: "amp"
-#      bounds: [-47, -40]
-#      injected: -43.894309514866353 
-#    - name: "fknee"
-#      bounds: [-4, -1.8] 
-#      injected: -2.595679532778269 
-#    - name: "fr1"
-#      bounds: [-4, -1.8] 
-#      injected: -2.856
-#    - name: "fr2"
-#      bounds: [-4, -1.8]
-#      injected: -3.487854923626168 
+  #cosmic_string:
+  #  - name: "Amp"
+  #    bounds: [-15, -10]
+  #    injected: -11.259637310505756
+  #  - name: "slope"
+  #    bounds: [-4, -1]
+  #    injected: 0
+  #extra_DWD:
+  #  - name: "a"
+  #    bounds: [-12, -8]
+  #    injected: -10.76
+  #  - name: "b"
+  #    bounds: [2, 6]
+  #    injected: 4.18
+  #  - name: "gamma1"
+  #    bounds: [-1, 2]
+  #    injected: 0.741
+  #  - name: "gamma2"
+  #    bounds: [-2, 2]
+  #    injected: -0.255
+  #galactic_DWD: 
+  #  - name: "alpha"
+  #    bounds:  [1., 2.4]
+  #    injected: 1.8
+  #  - name: "amp"
+  #    bounds: [-47, -40]
+  #    injected: -43.5 #894309514866353 
+  #  - name: "fknee"
+  #    bounds: [-4, -1.8] 
+  #    injected: -2.47 
+  #  - name: "fr1"
+  #    bounds: [-4, -1.8] 
+  #    injected: -2.70
+  #  - name: "fr2"
+  #    bounds: [-4, -1.8]
+  #    injected: -3.5086383061657274 
+  #gaussian_bump:
+  #  - name: "Amp"
+  #    bounds: [-15, -10]
+  #    injected: -12.48
+  #  - name: "fp"
+  #    bounds: [-4, -1]
+  #    injected: -3.0
+  #  - name: "sigma"
+  #    bounds: [0.1, 0.5]
+  #    injected: 0.3
   instr_noise:
     - name: "A"
       bounds: [1, 5]
@@ -24,13 +54,26 @@ sources:
     - name: "P"
       bounds: [3, 10]
       injected: 7.9
-  power_law:
+  #power_law:
+  #  - name: "Amp"
+  #    bounds: [-16, -3]
+  #    injected: -12.42
+  #  - name: "slope"
+  #    bounds: [0, 5]
+  #    injected: 0.67
+  phase_transition:
     - name: "Amp"
-      bounds: [-16, -3]
-      injected: -10.5
-    - name: "slope"
-      bounds: [0, 5]
-      injected: 0.67
+      bounds: [-15, -8]
+      injected: -10.
+    - name: "fp"
+      bounds: [-4, 2]
+      injected: -3.6989700043360187
+    - name: "n"
+      bounds: [-2, 5]
+      injected: 3.5
+
+    
+
 
  
    

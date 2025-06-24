@@ -7,6 +7,7 @@ from bahamas.backend_context import get_backend_components
 # Load backend components after backend initialization
 jnp, jit, lax = get_backend_components()
 
+
 # Check if lax is available
 if jnp is None:
     #default to jax numpy
@@ -27,7 +28,7 @@ import numpy as np
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
-
+print(lax)
 # Constants
 Planck18_H0 = Planck18.H0.si.value
 H02 = Planck18_H0**2
@@ -38,30 +39,6 @@ year = 31557600.0  # Seconds in a year
 ##################################################################################
 #SIGNAL MODELS
 ##################################################################################
-@jit
-def Omega_pl(freqs, par):
-    """"
-    Power-law model for gravitational wave signal.
-
-    Args:
-        freqs (array): Frequency array.
-        par (dict): Parameters for the model.
-        
-    Returns:
-        array: Power spectral density.
-    """
-
-    Amp = par['Amp']
-    slope = par['slope']
-
-    f0 = 1
-    Omega = 10**Amp*(freqs/ f0)**slope
-    S_h = Omega * (3*H02)/ (4*jnp.pi**2*freqs**3)
-
-    
-    return S_h
-
-
 @jit
 def Omega_extra_foreground(freqs, par):    
     """
@@ -85,6 +62,72 @@ def Omega_extra_foreground(freqs, par):
     S_h = Omega* (3*H02) / (4*jnp.pi**2*freqs**3)
 	
     return S_h
+
+@jit
+def Omega_gaussian_bump(freqs, par):
+    """
+    Power spectral density for gravitational waves modeled as a Gaussian bump.
+
+    Args:
+        freqs (array): Frequency array.
+        par (dict): Parameters for the model.
+    Returns:
+        array: Power spectral density.
+    """
+    A = par['Amp']
+    fp = par['fp']
+    sigma = par['sigma']
+
+    # Compute the Omega formula
+    Omega = 10**A * jnp.exp(-1 / (2 * sigma**2) * jnp.log(freqs / 10**fp)**2)
+    S_h = Omega * (3 * H02) / (4 * jnp.pi**2 * freqs**3)
+
+    return S_h
+
+@jit
+def Omega_phase_transition(freqs, par):
+    """
+    Power spectral density for gravitational waves from phase transitions.
+
+    Args:
+        freqs (array): Frequency array.
+        par (dict): Parameters for the model.
+    Returns:
+        array: Power spectral density.
+    """
+    Amp = par['Amp']
+    fp = par['fp']
+    n = par['n']
+
+    # Compute the Omega formula
+    Omega = 10**Amp * (freqs / 10**fp)**3 * (7 / (4 + 3 * (freqs / 10**fp)**2))**n
+    S_h = Omega * (3 * H02) / (4 * jnp.pi**2 * freqs**3)
+
+    return S_h
+
+@jit
+def Omega_pl(freqs, par):
+    """"
+    Power-law model for gravitational wave signal.
+
+    Args:
+        freqs (array): Frequency array.
+        par (dict): Parameters for the model.
+        
+    Returns:
+        array: Power spectral density.
+    """
+
+    Amp = par['Amp']
+    slope = par['slope']
+
+    f0 = 1e-3
+    Omega = 10**Amp*(freqs/ f0)**slope
+    S_h = Omega * (3*H02)/ (4*jnp.pi**2*freqs**3)
+
+    
+    return S_h
+
 
 @jit
 def galactic_foreground(freqs, par, injected = False, gen2=False):
@@ -312,7 +355,12 @@ def model_psd(freqs, sources, response, injected=False, tdi=0, **kwargs):
     # Loop through each source and compute its contribution to the PSD
     for source_name in sources.keys():
 
-        if source_name == 'extra_DWD':
+        if source_name == 'cosmic_string':
+            psd += response * Omega_pl(freqs, sources[source_name])
+            if injected:
+                true_psd.append(response * Omega_pl(freqs, sources[source_name]))
+
+        elif source_name == 'extra_DWD':
             psd += response * Omega_extra_foreground(freqs, sources[source_name])
             if injected:
                 true_psd.append(response * Omega_extra_foreground(freqs, sources[source_name]))
@@ -329,10 +377,20 @@ def model_psd(freqs, sources, response, injected=False, tdi=0, **kwargs):
             if injected:
                 true_psd.append(galactic_foreground_time(freqs, sources[source_name], t1=t1, t2=t2, tdi=tdi, injected=injected, gen2=kwargs.get('gen2')))
 
+        elif source_name == 'gaussian_bump':
+            psd += response * Omega_gaussian_bump(freqs, sources[source_name])
+            if injected:
+                true_psd.append(response * Omega_gaussian_bump(freqs, sources[source_name]))
+
         elif source_name == 'instr_noise':
             psd += noise(freqs, sources[source_name], gen2=kwargs.get('gen2'))
             if injected:
                 true_psd.append(noise(freqs, sources[source_name], gen2=kwargs.get('gen2')))
+
+        elif source_name == 'phase_transition':
+            psd += response * Omega_phase_transition(freqs, sources[source_name])
+            if injected:
+                true_psd.append(response * Omega_phase_transition(freqs, sources[source_name]))
 
         elif source_name == 'power_law':
             psd += response * Omega_pl(freqs, sources[source_name])

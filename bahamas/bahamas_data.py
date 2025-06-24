@@ -341,7 +341,7 @@ class SignalProcessor:
             plt.loglog(self.f_av[i], self.dataAV[i][0], alpha=0.3, color=color[i], linestyle='--', label=f'chunk {i+1}')
         plt.xlabel("Frequency")
         plt.xlim(1e-4, 0.029)
-        plt.ylim(10**-45, 10**-38)
+        plt.ylim(10**-48, 10**-38.5)
         plt.ylabel("Power Spectral Density")
         plt.title("PSD of the Generated Signal")
         plt.legend()
