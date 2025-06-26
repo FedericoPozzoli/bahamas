@@ -37,7 +37,7 @@ The algorithm provides flexibility to perform analyses with either full-resoluti
 
 This plot shows the types of signals you can simulate using `bahamas`. The galactic foreground can be generated and analyzed in both stationary and non-stationary assumption.
 
-![SGWB Landscape in bahamas](docs/source/_static/lisa_landscape_bahamas.png)
+![SGWB Landscape in bahamas](_static/lisa_landscape_bahamas.png)
 
 ## Notebooks
 In the `data` folder, you can find two example notebooks:

@@ -7,9 +7,6 @@ setup(
     author='Federico Pozzoli',
     author_email='fpozzoli@uninsubria.it',
     packages=find_packages(include=['bahamas', 'bahamas.psd_strain', 'bahamas.psd_response', 'bahamas.method']),
-    #package_data={
-    #    'bahamas': ['data/*.h5'],
-    #},
     install_requires=[
         'numpy',
         'jax',
@@ -21,6 +18,9 @@ setup(
         'pyyaml',
         'nessai',
     ],
+    url='https://github.com/fede121/bahamas.git',
+    license='Apache License 2.0',
+    license_files=['LICENSE'],
     classifiers=[
         'Programming Language :: Python :: 3',
         'Operating System :: OS Independent',
