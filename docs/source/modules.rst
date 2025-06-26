@@ -1,7 +1,11 @@
-bahamas
+Modules
 =======
 
 .. toctree::
    :maxdepth: 4
 
-   bahamas
+   bahamas.method
+   bahamas.psd_response
+   bahamas.psd_strain
+   bahamas_data
+   bahamas_inference
