@@ -48,13 +48,7 @@ In the `data` folder, you can find two example notebooks:
 
 ## Installation
 
-You can install BAHAMAS via pip:
-
-```bash
-pip install bahamas
-```
-
-Or install from source:
+You can install BAHAMAS from source:
 
 ```bash
 git clone https://github.com/fede121/bahamas.git
