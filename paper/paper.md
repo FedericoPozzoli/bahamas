@@ -80,7 +80,7 @@ The algorithm is flexible to perform analyses with either full-resolution data o
 
 # Performance
 
-Below, we present a comparison of posterior probability reconstruction between HMC and nessai, both implemented in `bahamas`. In this example, we reconstruct the Galactic foreground spectrum and modulation alongside LISA instrumental noise. The computational cost between the two approaches may vary depending on simulation settings. For one year of data analyzed with two-week chunk durations, the speed-up achieved is approximately a factor of 10.
+Below, we present a comparison of posterior probability reconstruction between HMC and nessai, both implemented in `bahamas`. In this example, we reconstruct the Galactic foreground spectrum and modulation alongside LISA instrumental noise. The computational cost between the two approaches may vary depending on simulation settings. For a stationary model (7 dimensional parameter space) the sample rate for hmc (nested sampling) inference is X coreseconds/sample (Y) over a 6 months long dataset, equivalent to Z and K datapoints for the Whittle and Gamma likelihood, respectively. For a cyclostationary model (N dimensional parameter space) the sample rate is P and Q
 
 ![Posterior probability reconstruction of the spectrum and modulation for the Galactic foreground and LISA noise, as obtained using HMC and nested sampling.](joss_corner.png)
 
