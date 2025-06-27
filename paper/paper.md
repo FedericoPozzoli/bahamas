@@ -80,7 +80,13 @@ The algorithm is flexible to perform analyses with either full-resolution data o
 
 # Performance
 
-Below, we present a comparison of posterior probability reconstruction between HMC and nessai, both implemented in `bahamas`. In this example, we reconstruct the Galactic foreground spectrum and modulation alongside LISA instrumental noise. The computational cost between the two approaches may vary depending on simulation settings. For a stationary model (7 dimensional parameter space) the sample rate for hmc (nested sampling) inference is X coreseconds/sample (Y) over a 6 months long dataset, equivalent to Z and K datapoints for the Whittle and Gamma likelihood, respectively. For a cyclostationary model (N dimensional parameter space) the sample rate is P and Q
+Below, we present a comparison of posterior probability reconstruction between HMC and nessai, both implemented in `bahamas`. In the example, we reconstruct the Galactic foreground spectrum and modulation alongside LISA instrumental noise. The computational cost between the two approaches may vary depending on inference settings. 
+As a figure of merit, we consider a dataset corresponding to 6 months of mission duration, or 26 thousands (4 millions) effective datapoints for each Gamma (Whittle) likelihood evaluation.
+For the cyclostationary model inference over a 12-dimensional parameter space the hmc algorithm obtains 12 and 0.5 posterior samples per second for the Gamma and Whittle likelihood, while nessai does the equivalent with 2.6 (0.2) samples per second.
+While parallel chains in HMC are obtained independently, the number of simultaneous walkers in nested sampling affects significantly the performances.
+In this test we employed 10 cores and 16 cores for the 10 parallel HMC chains and the 16 parallel nested sampling walkers, respectively.
+Even if the speedup in using HMC is apparent from the metrics above, we highlight that Numpyro's performance, when internally parallelized over multiple chains, is known to be suboptimal and substantially dependent on the warmup chain length. 
+In future release, we will provide code infrastructure to parallelize each chain production externally to the Numpyro API. 
 
 ![Posterior probability reconstruction of the spectrum and modulation for the Galactic foreground and LISA noise, as obtained using HMC and nested sampling.](joss_corner.png)
 
