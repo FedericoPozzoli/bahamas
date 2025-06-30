@@ -7,7 +7,7 @@
 **Bahamas: BAyesian inference with HAmiltonian Montecarlo for Astrophysical Stochastic background.**
 
 BAHAMAS is a Python package for the inference of stochastic gravitational wave background signals (SGWB) using Hamiltonian Markov Chain Monte Carlo (HMCMC) as implemented in [NumPyro](https://num.pyro.ai/en/stable/getting_started.html#what-is-numpyro), which relies on JAX for automatic differentiation and JIT compilation to GPU/CPU.  
-BAHAMAS is under active development, so be aware of potential brittleness, bugs, and changes to the API as the design evolves.
+BAHAMAS is under active development, so be aware of potential brittleness, bugs, and changes to the API as the design evolves. A reference description for the first BAHAMAS release is available at:  
 
 ## Features
 
