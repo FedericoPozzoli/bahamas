@@ -8,7 +8,7 @@ on:
       - requirements.txt
 
 permissions:
-  contents: write  # Grant write permissions to the GITHUB_TOKEN
+  contents: write  # Needed for gh-pages deployment
 
 jobs:
   build:
@@ -28,12 +28,29 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install sphinx sphinx-rtd-theme furo
-      - name: Build Sphinx documentation
+      - name: Test doc build
         working-directory: docs
+        run: make html
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
         run: |
-          make html
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install sphinx sphinx-rtd-theme furo
+      - name: Build Sphinx HTML
+        working-directory: docs
+        run: make html
       - name: Deploy to GitHub Pages
-        #if: ${{ matrix.python-version == '3.10' }}
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
