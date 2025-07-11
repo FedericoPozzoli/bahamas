@@ -313,8 +313,8 @@ class SignalProcessor:
 
         logger.info(f"Data saved in {self.file}.h5 and {self.fileAV}.h5")
 
-        # Save time intervals if chunks are present
-        if any(key in self.config for key in ['chunk']):
+        # Save time intervals if chunks or gaps are present
+        if any(key in self.config for key in ['chunk', 'gaps']):
             logger.info("Saving start and end of chunk.")
             name_folder = get_first_part(self.config['fileAV'])
             np.savetxt(f'{name_folder}/time_interval.txt', [self.T1, self.T2])
