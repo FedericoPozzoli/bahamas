@@ -142,7 +142,7 @@ class SignalProcessor:
             if 'equal_arm' in config:
                 self.equal_arm = config['equal_arm']
             else:
-                self.equal_arm = 8.3
+                self.equal_arm = 8.33
 
             if 'tdi' in config:
                 self.tdi = config['tdi']
@@ -175,6 +175,16 @@ class SignalProcessor:
             if 'chunk' not in self.config:
                 logger.error('Use chunked or gapped data with cyclo galactic sources')
                 sys.exit()
+
+        #if 'bulge_time' in self.sources:
+        #    if 'chunk' not in self.config:
+        #        logger.error('Use chunked or gapped data with cyclo bulge disk sources')
+        #        sys.exit()
+
+        #if 'disk_time' in self.sources:
+        #    if 'chunk' not in self.config:
+        #        logger.error('Use chunked or gapped data with cyclo bulge disk sources')
+        #        sys.exit()
 
         if 'gaps' in self.config:
             logger.info('Production of gapped data')
@@ -255,8 +265,8 @@ class SignalProcessor:
     
             data_chunk_tdi, data_chunk_tdi_av, response_tdi_av = [], [], []
             for ind_tdi in range(self.ntdi):
-                psd_tdi, _ = psd.model_psd(freqs, sources=self.sources, response=response_tdi[ind_tdi], injected=True, t1=self.T1[i], t2=self.T2[i], tdi=i, gen2 = self.gen2)
-                _, _tdi = GP_freq(freqs, self.dt, psd=psd_tdi, seed=np.random.randint(0, 1e6))
+                psd_tdi, _ = psd.model_psd(freqs, sources=self.sources, response=response_tdi[ind_tdi], injected=True, t1=self.T1[i], t2=self.T2[i], tdi=ind_tdi, gen2 = self.gen2)
+                _, _tdi = GP_freq(freqs, self.dt, psd=psd_tdi)
                 data_chunk_tdi.append(_tdi)
 
                 if self.config['mod'] == 'lin':
@@ -330,12 +340,14 @@ class SignalProcessor:
         self.freq_output = np.arange(1e-5, 0.029, 1 / self.T)
         self.df = 1 / self.T
 
-        if 'galactic_DWD_time' not in self.sources:   
+
+        if all(k not in self.sources for k in ['galactic_DWD_time']):
             self.RAA_output, self.REE_output = self.compute_response(self.freq_output)
             psd_totA, self.psdA_output = psd.model_psd(self.freq_output, sources=self.sources, response=self.RAA_output, injected=True, gen2 = self.gen2)
             psd_totE, self.psdE_output = psd.model_psd(self.freq_output, sources=self.sources, response=self.REE_output, injected=True, gen2 = self.gen2)
             for i, name in enumerate(self.sources.keys()):
                 plt.loglog(self.freq_output, self.psdA_output[i], label=name)
+
 
         for i in range(len(self.T1)):
             plt.loglog(self.f_av[i], self.dataAV[i][0], alpha=0.3, color=color[i], linestyle='--', label=f'chunk {i+1}')
@@ -383,7 +395,7 @@ class SignalProcessor:
         """
         Compute and log the Signal-to-Noise Ratio (SNR) for each source.
         """
-        if 'galactic_DWD_time' not in self.sources and 'galactic_prototype' not in self.sources:
+        if all(k not in self.sources for k in ['galactic_DWD_time', 'disk_time', 'bulge_time']):
             for i, name in enumerate(self.sources.keys()):
                 if name == 'instr_noise':
                     SnA, SnE = self.psdA_output[i], self.psdE_output[i]
@@ -400,7 +412,7 @@ class SignalProcessor:
 # DATA GENERATION AND PROCESSING
 ##################################################################################
 
-def GP_freq(freqs, dt, psd, seed=42, time=False):
+def GP_freq(freqs, dt, psd, time=False):
     """
     Generates a stationary Gaussian process using the inverse FFT method.
 
@@ -414,7 +426,6 @@ def GP_freq(freqs, dt, psd, seed=42, time=False):
     Returns:
         tuple: Frequency and Fourier coefficients, or time and signal, or both.
     """
-    np.random.seed(seed)
     amp_r = np.random.normal(loc=np.zeros_like(freqs), scale=np.sqrt(psd * (len(freqs) / dt)))
     amp_i = np.random.normal(loc=np.zeros_like(freqs), scale=np.sqrt(psd * (len(freqs) / dt)))
     fourier_coeffs = (amp_r + 1j * amp_i) / np.sqrt(2)
