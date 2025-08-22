@@ -1,6 +1,8 @@
 name: JOSS draft
 on: 
   push: 
+    branches:
+      - paper
     paths:
       - paper/paper.md
       - paper/paper.bib

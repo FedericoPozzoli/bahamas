@@ -5,6 +5,9 @@ on:
       - .github/workflows/testing.yml
       - tests/**
       - requirements.txt
+    branches:
+      - packaging
+
 
 jobs:
   build:
