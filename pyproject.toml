@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bahamas"
-version = "0.1.0a1"
+version = "0.1.0"
 description = "BAyesian HAmiltonian Montecarlo Analysis for Stochastic gravitational wave signal"
 readme = "README.md"
 requires-python = ">=3.8"
