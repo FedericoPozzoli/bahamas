@@ -1,0 +1,10 @@
+# Ignore .venv folder
+.venv/
+.venv-test/
+# Ignore Python cache files
+__pycache__/
+# Ignore egg-info files
+*.egg-info/
+
+# Ignore pytest cache
+.pytest_cache/

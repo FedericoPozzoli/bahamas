@@ -63,4 +63,4 @@ This project is open-source and available under the [Apache License 2.0](https:/
 
 ---
 
-For more information, examples, or to contribute, please visit the [GitHub repository](https://github.com/fede121/bahamas.git).
+For more information, examples, or to contribute, please visit the [GitHub repository](https://github.com/FedericoPozzoli/bahamas.git).

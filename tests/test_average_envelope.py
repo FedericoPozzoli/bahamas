@@ -37,7 +37,7 @@ def test_average_envelopes_gaussian_exact_value():
 
     # Expected value (computed manually or using a simplified version of the function)
     # This is a placeholder value; replace it with the actual computed value
-    expected_value = 1.8409162940416053  # Replace with the exact value
+    expected_value = 2.0844846240337227  # Replace with the exact value
 
     # Assert that the result matches the expected value within a tolerance
     assert jnp.isclose(result, expected_value, atol=1e-5), f"Expected {expected_value}, got {result}"

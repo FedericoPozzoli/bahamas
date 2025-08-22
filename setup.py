@@ -17,6 +17,7 @@ setup(
         'h5py',
         'pyyaml',
         'nessai',
+        'healpy'
     ],
     url='https://github.com/fede121/bahamas.git',
     license='Apache License 2.0',
