@@ -1,4 +1,4 @@
-Utilties
+Utilities
 ================
 
 .. toctree::
