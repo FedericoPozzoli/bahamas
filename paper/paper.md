@@ -92,22 +92,16 @@ In future release, we will provide code infrastructure to parallelize each chain
 
 # Outlooks
 
-**Evidence**
+**Evidence, flexible spectral models**
 
-In future releases, we plan to include methods for computing the Bayesian evidence from HMC chains, enabling rigorous model selection. To estimate the evidence from HMC sample chains, viable techniques are thermodynamic integration and stepping-stone estimation [@Maturana-Russel:2019].
-Currently, `bahamas` also supports posterior probability exploration via nested sampling, using the nessai implementation [@Williams:2021], which provides evidence estimates as part of its output.
+In future releases, modules for Bayesian evidence computation from HMC chains will be added, based on [@Maturana-Russel:2019].
+Currently, evidences can be obtained via nested sampling, using the nessai implementation [@Williams:2021] available in `bahamas`.
+More flexible spectral parametrization like the EGP model developed in [@Pozzoli:2024], will also be added.
 
-**Flexible Parametrization**
+**Non-stationarities and TDI correlations**
 
-Uncertainties in both the stochastic signal and the instrumental noise are expected for LISA, not only in their overall amplitude but also in their spectral shapes. For example, variations in the astrophysical modeling of white dwarf populations can lead to fluctuations in the shape of the Galactic foreground spectrum. Similarly, incorporating more realistic noise components can introduce additional complexity. To address these shape uncertainties, we plan to integrate the Expectation value of Gaussian Process (EGP) model, developed in [@Pozzoli:2024], as an example of a flexible parametrization.
-
-**Other Non-stationarity**
-
-The cyclostationarity associated with the Galactic foreground is not the only source of non-stationarity in the LISA datastreams. Due to its actual orbit, LISA arm lengths will be unequal and vary over time. This effect introduces second-order non-stationarities in both the Galactic signal and the instrumental noise. At present, `bahamas` is not designed to address this issue, but further extensions of its capabilities are underway.
-
-**TDI Correlations**
-
-Unequal arm length introduces also correlation between different TDI channels. These correlations can be accounted for in data analysis under the assumption of stationarity, as they appear as additional off-diagonal terms in the covariance matrix at each frequency [@Hartwig:2023]. However, such correlations have not yet been explored or modeled for the Galactic foreground scenario. In future work, we plan to include a correlation matrix for stationary signal and noise and assess the impact of correlations in the non-stationary case.
+Time-variations induced by realistic LISA armlengths on Galactic signal and instrumental noise will be included in the data simulation and inference modules. At present, `bahamas` is not designed to address this issue, but further extensions of its capabilities are underway.
+Similarly induced correlations between TDI channels will be addressed expanding the off-diagonal terms in the covariance matrix introduced by [@Hartwig:2023].
 
 # Acknowledgements
 
