@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='bahamas',
-    version='0.1.0',
+    version='0.1.1',
     description='BAyesian HAmiltonian Montecarlo Analysis for Stochastic gravitational wave signal',
     author='Federico Pozzoli',
     author_email='fpozzoli@uninsubria.it',
