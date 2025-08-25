@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bahamas"
+version = "0.1.1"
+description = "BAyesian HAmiltonian Montecarlo Analysis for Stochastic gravitational wave signal"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "Apache License 2.0" }
+
+authors = [
+  { name = "Federico Pozzoli", email = "fpozzoli@uninsubria.it" },
+  { name = "Riccardo Buscicchio", email = "riccardo.buscicchio@unimib.it" }
+]
+
+maintainers = [
+  { name = "Federico Pozzoli", email = "fpozzoli@uninsubria.it" },
+  { name = "Riccardo Buscicchio", email = "riccardo.buscicchio@unimib.it" }
+]
+
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent"
+]
+
+dependencies = [
+  "numpy",
+  "jax",
+  "jaxlib",
+  "numpyro",
+  "scipy",
+  "matplotlib",
+  "h5py",
+  "pyyaml",
+  "nessai",
+  "healpy"
+]
+
+[project.urls]
+Homepage = "https://github.com/FedericoPozzoli/bahamas"
+Repository = "https://github.com/FedericoPozzoli/bahamas.git"
+Issues = "https://github.com/FedericoPozzoli/bahamas/issues"
+
+[project.scripts]
+bahamas-inference = "bahamas.utilities.run_pe:main"
+bahamas-data = "bahamas.utilities.run_data:main"
+bahamas-input = "bahamas.utilities.run_input:main"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+packages = [
+  "bahamas",
+  "bahamas.psd_strain",
+  "bahamas.psd_response",
+  "bahamas.method",
+  "bahamas.utilities"
+]
+
+[tool.setuptools.package-data]
+"bahamas" = ["../template/*.yaml", "../docs/_static/*"]

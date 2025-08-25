@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 
 setup(
     name='bahamas',
-    version='0.1.0',
+    version='0.1.1',
     description='BAyesian HAmiltonian Montecarlo Analysis for Stochastic gravitational wave signal',
     author='Federico Pozzoli',
     author_email='fpozzoli@uninsubria.it',
-    packages=find_packages(include=['bahamas', 'bahamas.psd_strain', 'bahamas.psd_response', 'bahamas.method']),
+    packages=find_packages(include=['bahamas', 'bahamas.psd_strain', 'bahamas.psd_response', 'bahamas.method', 'bahamas.utilities']),
     install_requires=[
         'numpy',
         'jax',
@@ -17,6 +17,7 @@ setup(
         'h5py',
         'pyyaml',
         'nessai',
+        'healpy'
     ],
     url='https://github.com/fede121/bahamas.git',
     license='Apache License 2.0',
@@ -28,9 +29,9 @@ setup(
     python_requires='>=3.8',
     entry_points={
     'console_scripts': [
-        'bahamas_inference=utilities.run_pe:main',
-        'bahamas_data=utilities.run_data:main',
-        'bahamas_input=utilities.run_input:main',
+        'bahamas_inference=bahamas.utilities.run_pe:main',
+        'bahamas_data=bahamas.utilities.run_data:main',
+        'bahamas_input=bahamas.utilities.run_input:main',
     ],
 },
 )

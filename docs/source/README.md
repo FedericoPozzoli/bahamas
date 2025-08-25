@@ -1,7 +1,7 @@
 # BAHAMAS
 
-[![JOSS draft](https://github.com/fede121/bahamas/actions/workflows/paper.yml/badge.svg?branch=main)](https://github.com/fede121/bahamas/actions/workflows/paper.yml) [![Tests](https://github.com/fede121/bahamas/actions/workflows/testing.yml/badge.svg?branch=main)](https://github.com/fede121/bahamas/actions/workflows/testing.yml)
-[![Documentation Status](https://github.com/fede121/bahamas/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/fede121/bahamas/actions/workflows/docs.yml)
+[![JOSS draft](https://github.com/FedericoPozzoli/bahamas/actions/workflows/paper.yml/badge.svg?branch=main)](https://github.com/FedericoPozzoli/bahamas/actions/workflows/paper.yml) [![Tests](https://github.com/FedericoPozzoli/bahamas/actions/workflows/testing.yml/badge.svg?branch=main)](https://github.com/FedericoPozzoli/bahamas/actions/workflows/testing.yml)
+[![Documentation Status](https://github.com/FedericoPozzoli/bahamas/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/FedericoPozzoli/bahamas/actions/workflows/docs.yml)
 
 
 **Bahamas: BAyesian inference with HAmiltonian Montecarlo for Astrophysical Stochastic background.**
@@ -11,7 +11,7 @@ BAHAMAS is under active development, so be aware of potential brittleness, bugs,
 
 ## Features
 
-The package includes two main command-line interfaces:
+The package includes three main command-line interfaces:
 
   - `bahamas_data`: Data simulation and preprocessing. 
 
@@ -24,6 +24,14 @@ Both scripts require two input files:
   - `--config config.yaml`: Specifies the simulation and inference settings, sampler configuration, and output paths.
 
   - `--sources sources.yaml`: Defines the sources to be injected and/or recovered. This includes the true physical parameters of the sources as well as the prior ranges used for inference.
+
+Alternatively, you can use the executable entrypoints:
+
+```bash
+bahamas-data --help
+bahamas-inference --help
+bahamas-input --help
+```
 
 The data consist of two datastreams—the A and E channels—which are specific combinations of Time-Delay Interferometry ([TDI](https://ui.adsabs.harvard.edu/abs/2021LRR....24....1T/abstract)) variables. In `bahamas`, the data are generated in the frequency domain, chunk by chunk. This represents a simplification, as it neglects potential biases arising in the time domain, such as windowing effects and spectral leakage.  The duration of each chunk—and consequently the frequency resolution—can be configured via config.yaml. However, we recommend not using time lengths shorter than $10^4 \mathrm{s}$, which corresponds to a frequency resolution of approximately $\Delta f \sim 0.1 \mathrm{mHz}$, below which the characterization of LISA's instrumental noise is not guaranteed.  
 
@@ -57,7 +65,7 @@ pip install bahamas
 Or install from source:
 
 ```bash
-git clone https://github.com/fede121/bahamas.git
+git clone https://github.com/FedericoPozzoli/bahamas.git
 cd bahamas
 pip install .
 ```
@@ -68,4 +76,4 @@ This project is open-source and available under the [Apache License 2.0](https:/
 
 ---
 
-For more information, examples, or to contribute, please visit the [GitHub repository](https://github.com/fede121/bahamas.git).
+For more information, examples, or to contribute, please visit the [GitHub repository](https://github.com/FedericoPozzoli/bahamas.git).
