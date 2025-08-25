@@ -8,7 +8,7 @@ def setup(app):
 
 project = 'bahamas'
 author = 'Federico Pozzoli'
-release = '0.1'
+release = '0.1.2'
 
 extensions = [
     'myst_parser',  # Add myst_parser extension

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='bahamas',
-    version='0.1.1',
+    version='0.1.2',
     description='BAyesian HAmiltonian Montecarlo Analysis for Stochastic gravitational wave signal',
     author='Federico Pozzoli',
     author_email='fpozzoli@uninsubria.it',
@@ -19,7 +19,7 @@ setup(
         'nessai',
         'healpy'
     ],
-    url='https://github.com/fede121/bahamas.git',
+    url='https://github.com/FedericoPozzoli/bahamas.git',
     license='Apache License 2.0',
     license_files=['LICENSE'],
     classifiers=[
