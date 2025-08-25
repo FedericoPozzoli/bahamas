@@ -262,11 +262,161 @@ def galactic_foreground_time(freqs, par, injected=False, t1=0, t2=0, tdi=0, gen2
     return Sh
 
 
+#@jit
+#def bulge_time(freqs, par, injected=False, t1=0, t2=0, tdi=0, gen2=False):
+#    """
+#    Galactic foreground model for gravitational wave signal with time dependence.
+#    https://arxiv.org/abs/2410.08274, https://arxiv.org/abs/2410.08263
+#
+#    Args:
+#        freqs (array): Frequency array.
+#        injected (bool): If True, uses injected parameters.
+#        par (dict): Parameters for the model.
+#        t1 (float): Start time for the envelope.
+#        t2 (float): End time for the envelope.
+#        tdi (int): TDI channel (0 = A, 1 = E).
+#    Returns:
+#        array: Power spectral density.
+#    """
+#        
+#    if 'fknee' not in par:
+#        Tobs = par['Tobs'] / year
+#        
+#        alpha = par['alpha']
+#        amp = par['amp']
+#        a1 = par['a1']
+#        b1 = par['b1']
+#        ak = par['ak']
+#        bk = par['bk']
+#        fr2 = par['fr2']
+#        lat = par['lat']
+#        long = par['long']
+#        psi = par['psi']
+#        s1 = par['s1']
+#        s2 = par['s2']
+#        
+#        fr1 = a1 * jnp.log10(Tobs) + b1
+#        fknee = ak * jnp.log10(Tobs) + bk
+#    else:
+#        alpha = par['alpha']
+#        amp = par['amp']
+#        fknee = par['fknee']
+#        fr1 = par['fr1']
+#        fr2 = par['fr2']
+#        lat = par['lat']
+#        long = par['long']
+#        psi = par['psi']
+#        s1 = par['s1']
+#        s2 = par['s2']
+#
+#    amp_time = env.average_envelopes_gaussian(
+#        lat, long, s1, s2, psi, t1, t2, 
+#        LISA_Orbital_Freq=1 / year, alpha0=0., beta0=0., tdi=tdi
+#    )
+#
+#    Sh = (
+#        amp_time * 10**amp * jnp.exp(-(freqs / 10**fr1)**alpha) *
+#        (freqs**(-7./3.)) * 0.5 * (1.0 + jnp.tanh(-(freqs - 10**fknee) / 10**fr2))
+#    )
+#
+#    # LISA arm length and angular frequency
+#    omega = 2.0 * jnp.pi * freqs
+#    x = omega * L
+#    tr = (x) ** 2 * jnp.sin(x)**2
+#    Sh *= tr
+#
+#    factor_tdi2 = 4 * jnp.sin(2 * x)**2
+#
+#    if lax is not None:
+#        # Use lax.cond for JAX compatibility
+#        Sh = lax.cond(gen2, lambda s: s * factor_tdi2, lambda s: s, Sh)
+#    else:
+#        # Fallback for non-JAX environments
+#        Sh = Sh * factor_tdi2 if gen2 else Sh
+#
+#    return Sh
+
+
+#@jit
+#def disk_time(freqs, par, injected=False, t1=0, t2=0, tdi=0, gen2=False):
+#    """
+#    Galactic foreground model for gravitational wave signal with time dependence.
+#    https://arxiv.org/abs/2410.08274, https://arxiv.org/abs/2410.08263
+#
+#    Args:
+#        freqs (array): Frequency array.
+#        injected (bool): If True, uses injected parameters.
+#        par (dict): Parameters for the model.
+#        t1 (float): Start time for the envelope.
+#        t2 (float): End time for the envelope.
+#        tdi (int): TDI channel (0 = A, 1 = E).
+#    Returns:
+#        array: Power spectral density.
+#    """
+#        
+#    if 'fknee' not in par:
+#        Tobs = par['Tobs'] / year
+#        
+#        alpha = par['alpha']
+#        amp = par['amp']
+#        a1 = par['a1']
+#        b1 = par['b1']
+#        ak = par['ak']
+#        bk = par['bk']
+#        fr2 = par['fr2']
+#        lat = par['lat']
+#        long = par['long']
+#        psi = par['psi']
+#        s1 = par['s1']
+#        s2 = par['s2']
+#        
+#        fr1 = a1 * jnp.log10(Tobs) + b1
+#        fknee = ak * jnp.log10(Tobs) + bk
+#    else:
+#        alpha = par['alpha']
+#        amp = par['amp']
+#        fknee = par['fknee']
+#        fr1 = par['fr1']
+#        fr2 = par['fr2']
+#        lat = par['lat']
+#        long = par['long']
+#        psi = par['psi']
+#        s1 = par['s1']
+#        s2 = par['s2']
+#
+#    amp_time = env.average_envelopes_gaussian(
+#        lat, long, s1, s2, psi, t1, t2, 
+#        LISA_Orbital_Freq=1 / year, alpha0=0., beta0=0., tdi=tdi
+#    )
+#
+#    Sh = (
+#        amp_time * 10**amp * jnp.exp(-(freqs / 10**fr1)**alpha) *
+#        (freqs**(-7./3.)) * 0.5 * (1.0 + jnp.tanh(-(freqs - 10**fknee) / 10**fr2))
+#    )
+#
+#    # LISA arm length and angular frequency
+#    omega = 2.0 * jnp.pi * freqs
+#    x = omega * L
+#    tr = (x) ** 2 * jnp.sin(x)**2
+#    Sh *= tr
+#
+#    factor_tdi2 = 4 * jnp.sin(2 * x)**2
+#
+#    if lax is not None:
+#        # Use lax.cond for JAX compatibility
+#        Sh = lax.cond(gen2, lambda s: s * factor_tdi2, lambda s: s, Sh)
+#    else:
+#        # Fallback for non-JAX environments
+#        Sh = Sh * factor_tdi2 if gen2 else Sh
+#
+#    return Sh
+
+
 
 
 ##################################################################################NOISE
 @jit
-def noise(freq, par, gen2=False):
+def noise(freq, par, tdi, gen2=False):
     """
     Computes the noise power spectral density (PSD).
 
@@ -301,13 +451,29 @@ def noise(freq, par, gen2=False):
 
     # LISA arm length and angular frequency
     omega = 2.0 * jnp.pi * freq
-
+    
     # Compute the noise PSD
     x = omega * L
-    s_n = 8.0 * jnp.sin(x)**2 * (
+    
+    sn_a = 8.0 * jnp.sin(x)**2 * (
         2.0 * s_pm * (3.0 + 2.0 * jnp.cos(x) + jnp.cos(2 * x)) +
         s_op * (2.0 + jnp.cos(x))
     )
+
+    sn_t = (16.0 * s_op * (1.0 - jnp.cos(x)) * jnp.sin(x)**2 + 
+                    128.0 * s_pm * jnp.sin(x)**2 * jnp.sin(0.5*x)**4
+    )
+
+    # Select the appropriate noise based on TDI channel
+    if lax is not None:
+        s_n = lax.cond(
+        tdi == 2,
+        lambda _: sn_t,
+        lambda _: sn_a,
+        operand=None
+        )  
+    else:
+        s_n = sn_t if tdi == 2 else sn_a
 
     # Apply TDI2 factor if specified
     factor_tdi2 = 4 * jnp.sin(2 * x)**2
@@ -383,9 +549,9 @@ def model_psd(freqs, sources, response, injected=False, tdi=0, **kwargs):
                 true_psd.append(response * Omega_gaussian_bump(freqs, sources[source_name]))
 
         elif source_name == 'instr_noise':
-            psd += noise(freqs, sources[source_name], gen2=kwargs.get('gen2'))
+            psd += noise(freqs, sources[source_name], tdi = tdi, gen2=kwargs.get('gen2'))
             if injected:
-                true_psd.append(noise(freqs, sources[source_name], gen2=kwargs.get('gen2')))
+                true_psd.append(noise(freqs, sources[source_name], tdi = tdi, gen2=kwargs.get('gen2')))
 
         elif source_name == 'phase_transition':
             psd += response * Omega_phase_transition(freqs, sources[source_name])
@@ -396,6 +562,21 @@ def model_psd(freqs, sources, response, injected=False, tdi=0, **kwargs):
             psd += response * Omega_pl(freqs, sources[source_name])
             if injected:
                 true_psd.append(response * Omega_pl(freqs, sources[source_name]))
+
+        #elif source_name == 'bulge_time':
+        #    t1 = kwargs.get('t1')
+        #    t2 = kwargs.get('t2')
+        #    psd += bulge_time(freqs, sources[source_name], t1=t1, t2=t2, tdi=tdi, injected=injected, gen2=kwargs.get('gen2'))
+        #    if injected:
+        #        true_psd.append(disk_time(freqs, sources[source_name], t1=t1, t2=t2, tdi=tdi, injected=injected, gen2=kwargs.get('gen2')))
+
+        #elif source_name == 'disk_time':
+        #    t1 = kwargs.get('t1')
+        #    t2 = kwargs.get('t2')
+        #    psd += disk_time(freqs, sources[source_name], t1=t1, t2=t2, tdi=tdi, injected=injected, gen2=kwargs.get('gen2'))
+        #    if injected:
+        #        true_psd.append(disk_time(freqs, sources[source_name], t1=t1, t2=t2, tdi=tdi, injected=injected, gen2=kwargs.get('gen2')))
+
 
     # Return the total PSD and optionally the true PSDs for each source
     if injected:
