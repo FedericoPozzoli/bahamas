@@ -56,6 +56,11 @@ git clone https://github.com/fede121/bahamas.git
 cd bahamas
 pip install .
 ```
+or directly from the PyPI package available [here](https://pypi.org/project/bahamas/)
+
+```bash
+pip install bahamas
+```
 
 ## License
 
