@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - packaging
+      - main
     tags:
       - "v*.*.*"   # e.g. v0.1.0
 
