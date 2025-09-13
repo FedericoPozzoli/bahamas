@@ -112,6 +112,9 @@ class Method:
             keys = ['nlive', 'n_pool', 'flow_config', 'checkpointing', 'checkpoint_on_training', 'max_threads']
             sampler_kwargs = {key: self.config['inference'][key] for key in keys if key in sampler_opts}
 
+            # Add beta to likelihood kwargs
+            self.kwargs['beta'] = self.config['inference']['beta']
+            
             # Filtering
             logger.info(f"Passing the following kwargs: {sampler_kwargs}")
             model = setting_nessai.nessai_model(self.log_like, **self.kwargs)
