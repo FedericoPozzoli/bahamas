@@ -113,7 +113,8 @@ class Method:
             sampler_kwargs = {key: self.config['inference'][key] for key in keys if key in sampler_opts}
 
             # Add beta to likelihood kwargs
-            self.kwargs['beta'] = self.config['inference']['beta']
+            if 'beta' in self.config.get('inference', {}):
+                self.kwargs['beta'] = self.config['inference']['beta']
             
             # Filtering
             logger.info(f"Passing the following kwargs: {sampler_kwargs}")
