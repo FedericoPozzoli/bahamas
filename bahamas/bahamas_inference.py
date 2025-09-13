@@ -157,8 +157,8 @@ class Method:
             self.posterior = self.method.get_samples()
             self.chain = np.column_stack([self.posterior[key] for key in self.posterior])
             self.result['chain'] = self.chain
-            self.plot_corner()
-            self.plot_autocorrelation()
+#            self.plot_corner()
+#            self.plot_autocorrelation()
 
             if 'beta' in self.config['inference']:
                 self.get_likelihood()
