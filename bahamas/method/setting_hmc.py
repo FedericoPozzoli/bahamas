@@ -99,8 +99,10 @@ def gamma_lik(data, freqs, response, sources, dt, t1, t2, dof, gen2):
     for j, segment in enumerate(data):
         for i, tdi in enumerate(segment):
             f = jnp.array(freqs[j])
-            psd_model = psd.model_psd(freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2) / dof[j]
-            log_likelihood += -jnp.sum(jsc.special.gammaln(dof[j])) - jnp.sum(dof[j] * jnp.log(psd_model)) + jnp.sum((dof[j] - 1) * jnp.log(tdi)) - jnp.sum(tdi / psd_model)
+            psd_model = psd.model_psd(freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2) #/ dof[j]
+            log_likelihood += -jnp.sum(jsc.special.gammaln(0.5 * dof[j])) - jnp.sum(0.5 * dof[j] * jnp.log(psd_model)) + jnp.sum((0.5 * dof[j] - 1) * jnp.log(tdi)) - jnp.sum(0.5 * dof[j] * tdi / psd_model)
+            #psd_model = psd.model_psd(freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2) / dof[j]
+            #log_likelihood += -jnp.sum(jsc.special.gammaln(dof[j])) - jnp.sum(dof[j] * jnp.log(psd_model)) + jnp.sum(( dof[j] - 1) * jnp.log(tdi)) - jnp.sum(tdi / psd_model)
     numpyro.factor("log_likelihood", log_likelihood)
 
 def beta_scaled_log_likelihood(log_like_fn, beta):
