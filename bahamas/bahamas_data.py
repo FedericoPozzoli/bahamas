@@ -150,6 +150,7 @@ class SignalProcessor:
             else:
                 self.tdi = 'AE'
                 self.ntdi = 2
+    
             
         else:
             self.custom_response = False
@@ -253,6 +254,52 @@ class SignalProcessor:
         else:
             return resp.get_response(freqs, gen2 = self.gen2, tdi = self.tdi, equal_arm = self.equal_arm, cross_term = self.cross_term)
 
+    #def compute_numerical_envelope(self):
+        #"""
+        #Compute the numerical envelope for the sources.
+        #
+        #Returns:
+        #"""
+        #if self.mod_num == False:
+        #    None
+        #else:
+            #if 'galactic_DWD_time' in self.sources:
+            #    logger.info('Computing numerical envelope for galactic DWD sources')
+        #    import bahamas.psd_response.average_envelope_num as av_num
+        #    logger.info('Initializing numerical envelope computation')
+        #    R_sun = 8.12  # kpc
+        #    z_sun = 0.03  # kpc
+    
+        #    lams = np.linspace(0., 2 * np.pi, self.N_lambda)
+        #    betas = np.linspace(-np.pi / 2, np.pi / 2, self.N_beta)
+        #    Ds = np.linspace(0., 20, self.N_d)
+        #    D_grid, Lam_grid, Beta_grid = np.meshgrid(Ds, lams, betas, indexing='ij')
+
+            # Flatten for vectorized computation
+        #    D_grid_flat = D_grid.flatten()
+        #    Lam_grid_flat = Lam_grid.flatten()
+        #    Beta_grid_flat = Beta_grid.flatten()
+
+        #    lam_gal, beta_gal = av_num.transform_sky_coordinates_vmap(Lam_grid_flat, Beta_grid_flat)
+
+        #    x_gal = D_grid_flat * np.sin(lam_gal) * np.cos(beta_gal)
+        #    y_gal = R_sun - D_grid_flat * np.cos(lam_gal) * np.cos(beta_gal)
+        #    z_gal = z_sun - D_grid_flat * np.sin(beta_gal)
+
+        #    R_gal = np.sqrt(x_gal**2 + y_gal**2)
+
+        #    #save the galactic coordinates and grid in h5
+        #    name_folder = get_first_part(self.file)
+        #    name_file = name_folder + '/galactic_coordinates'
+        #    with h5py.File(name_file+'.h5', 'w') as f:
+        #        group = f.create_group('galactic_coordinates')
+        #        group.create_dataset('D_grid', data=D_grid)
+        #        group.create_dataset('Lam_grid', data=Lam_grid)
+        #        group.create_dataset('Beta_grid', data=Beta_grid)
+        #        group.create_dataset('R_gal', data=R_gal)
+        #        group.create_dataset('z_gal', data=z_gal)
+        #    logger.info('Galactic coordinates and grid saved in HDF5 file')
+
 
     def simulate_data(self):
         """
@@ -299,7 +346,7 @@ class SignalProcessor:
         self.dataAV, self.responseAV = dataAV, responseAV
         self.f_av = f_av
         self.count = count
-        
+
     def save_data(self):
         """
         Save the simulated data and responses to HDF5 files.
@@ -341,7 +388,7 @@ class SignalProcessor:
         self.df = 1 / self.T
 
 
-        if all(k not in self.sources for k in ['galactic_DWD_time']):
+        if all(k not in self.sources for k in ['galactic_DWD_time', 'galactic_DWD_num']):
             self.RAA_output, self.REE_output = self.compute_response(self.freq_output)
             psd_totA, self.psdA_output = psd.model_psd(self.freq_output, sources=self.sources, response=self.RAA_output, injected=True, gen2 = self.gen2)
             psd_totE, self.psdE_output = psd.model_psd(self.freq_output, sources=self.sources, response=self.REE_output, injected=True, gen2 = self.gen2)
@@ -378,6 +425,12 @@ class SignalProcessor:
                 plt.plot(np.linspace(self.T1[j], self.T2[j], len(ift))[:-1], ift[:-1], rasterized=True, color='teal', alpha=0.3)
             plt.savefig(f'{name_folder}mod_gal.png', bbox_inches='tight')
 
+        if 'galactic_DWD_num' in self.sources:
+            logger.info('Plotting sky distribution of galactic DWD sources')
+            psd.plot_sky_distribution(self.sources, self.config['folder_plot'])
+            
+            
+            
     def SNR2(self, Sh, Sn):
         """
         Compute the squared Signal-to-Noise Ratio (SNR).
@@ -395,7 +448,7 @@ class SignalProcessor:
         """
         Compute and log the Signal-to-Noise Ratio (SNR) for each source.
         """
-        if all(k not in self.sources for k in ['galactic_DWD_time', 'disk_time', 'bulge_time']):
+        if all(k not in self.sources for k in ['galactic_DWD_time', 'galactic_DWD_num']):
             for i, name in enumerate(self.sources.keys()):
                 if name == 'instr_noise':
                     SnA, SnE = self.psdA_output[i], self.psdE_output[i]
