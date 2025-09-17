@@ -78,15 +78,10 @@ def gamma_lik(sample, data, freqs, response, dt, t1, t2, dof, gen2, beta=1):
     for j, segment in enumerate(data):
         for i, tdi in enumerate(segment):
             f = np.array(freqs[j])
-            psd_model = psd.model_psd(
-                freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2
-            ) / dof[j]
-            log_likelihood += (
-                -np.sum(sc.special.gammaln(dof[j]))
-                - np.sum(dof[j] * np.log(psd_model))
-                + np.sum((dof[j] - 1) * np.log(tdi))
-                - np.sum(tdi / psd_model)
-            )
+            #psd_model = psd.model_psd(freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2) / dof[j]
+            #log_likelihood += (-np.sum(sc.special.gammaln(dof[j]))- np.sum(dof[j] * np.log(psd_model)) + np.sum((dof[j] - 1) * np.log(tdi))- np.sum(tdi / psd_model))
+            psd_model = psd.model_psd(freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2) #/ dof[j]
+            log_likelihood += (-np.sum(sc.special.gammaln(0.5*dof[j]))- np.sum(0.5* dof[j] * np.log(psd_model)) + np.sum((0.5* dof[j] - 1) * np.log(tdi))- np.sum(0.5* dof[j] * tdi / psd_model))
     return beta*log_likelihood
 
 
