@@ -97,7 +97,11 @@ def read_data(config):
             t1, t2 = time_data[0], time_data[1]
     else:
             t1, t2 = np.array([0]), np.array([0])
-
+    # If t1 and t2 are scalars, convert them to arrays for consistency
+    if np.isscalar(t1):
+        t1 = np.array([t1])
+    if np.isscalar(t2):
+        t2 = np.array([t2])
     return data_list, response_list, freq_list, count, gen2, t1, t2
 
 

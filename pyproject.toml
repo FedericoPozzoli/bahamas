@@ -35,7 +35,9 @@ dependencies = [
   "h5py",
   "pyyaml",
   "nessai",
-  "healpy"
+  "healpy",
+  "ruamel.yaml",
+  "corner"
 ]
 
 [project.urls]

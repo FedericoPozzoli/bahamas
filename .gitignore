@@ -8,3 +8,6 @@ __pycache__/
 
 # Ignore pytest cache
 .pytest_cache/
+
+# Ignore build folder
+build/

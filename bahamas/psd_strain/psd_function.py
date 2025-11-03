@@ -52,7 +52,7 @@ def Omega_extra_foreground(freqs, par):
         array: Power spectral density.
     """
     a = par['a']
-    b = par['b']
+    b = 4.1875207208364635 #par['b']
     gamma1 = par['gamma1']
     gamma2 = par['gamma2']
 

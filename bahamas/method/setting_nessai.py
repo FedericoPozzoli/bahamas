@@ -23,7 +23,7 @@ import nessai.model
 
 
 
-def whittle_lik(sample, data, freqs, response, dt, t1, t2, dof,gen2):
+def whittle_lik(sample, data, freqs, response, dt, t1, t2, dof,gen2, beta=1):
     """
     Computes the Whittle likelihood for a given sample.
 
@@ -36,6 +36,7 @@ def whittle_lik(sample, data, freqs, response, dt, t1, t2, dof,gen2):
         t1, t2 (list): Start and end times for each segment.
         dof (list): Degrees of freedom for each segment.
         matrix_egp (array): Matrix for EGP modeling.
+        beta (float): fictitious parameter to synthesize power posteriors (defaults to 1)  
 
     Returns:
         float: Log-likelihood value.
@@ -53,10 +54,10 @@ def whittle_lik(sample, data, freqs, response, dt, t1, t2, dof,gen2):
                 - 0.5 * len(f) * np.log(2 * np.pi)
                 - 0.5 * np.sum(np.log(psd_model))
             )
-    return log_likelihood
+    return beta*log_likelihood
 
 
-def gamma_lik(sample, data, freqs, response, dt, t1, t2, dof, gen2):
+def gamma_lik(sample, data, freqs, response, dt, t1, t2, dof, gen2, beta=1):
     """
     Computes the Gamma likelihood for a given sample.
 
@@ -68,6 +69,7 @@ def gamma_lik(sample, data, freqs, response, dt, t1, t2, dof, gen2):
         dt (float): Time step.
         t1, t2 (list): Start and end times for each segment.
         dof (list): Degrees of freedom for each segment.
+        beta (float): fictitious parameter to synthesize power posteriors (defaults to 1)
 
     Returns:
         float: Log-likelihood value.
@@ -76,16 +78,11 @@ def gamma_lik(sample, data, freqs, response, dt, t1, t2, dof, gen2):
     for j, segment in enumerate(data):
         for i, tdi in enumerate(segment):
             f = np.array(freqs[j])
-            psd_model = psd.model_psd(
-                freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2
-            ) / dof[j]
-            log_likelihood += (
-                -np.sum(sc.special.gammaln(dof[j]))
-                - np.sum(dof[j] * np.log(psd_model))
-                + np.sum((dof[j] - 1) * np.log(tdi))
-                - np.sum(tdi / psd_model)
-            )
-    return log_likelihood
+            #psd_model = psd.model_psd(freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2) / dof[j]
+            #log_likelihood += (-np.sum(sc.special.gammaln(dof[j]))- np.sum(dof[j] * np.log(psd_model)) + np.sum((dof[j] - 1) * np.log(tdi))- np.sum(tdi / psd_model))
+            psd_model = psd.model_psd(freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2) #/ dof[j]
+            log_likelihood += (-np.sum(sc.special.gammaln(0.5*dof[j]))- np.sum(0.5* dof[j] * np.log(psd_model)) + np.sum((0.5* dof[j] - 1) * np.log(tdi))- np.sum(0.5* dof[j] * tdi / psd_model))
+    return beta*log_likelihood
 
 
 class nessai_model(nessai.model.Model):

@@ -88,6 +88,12 @@ class Method:
 
             kernel = NUTS(self.log_like, adapt_mass_matrix=self.config['inference']['adapt_matrix'])
             self.method = MCMC(kernel, **self._get_mcmc_params())
+            # Set a seed if provided, else set it to None
+            self.seed = self.config['inference'].get('seed', None)
+            if self.seed is not None:
+                logger.info(f"Chosen seed: {self.seed}")
+            else:
+                logger.info("No seed provided, will use 100 as default")
 
         elif self.sampler == 'nested':            
             sampler_opts = self.config['inference']
@@ -98,7 +104,7 @@ class Method:
                 sampler_opts['checkpointing'] = True
             if 'checkpoint_on_training' not in sampler_opts:
                 sampler_opts['checkpoint_on_training'] = True
-            
+                
             if 'max_threads' in sampler_opts:
                 nthreads = sampler_opts['max_threads']
             
@@ -106,6 +112,10 @@ class Method:
             keys = ['nlive', 'n_pool', 'flow_config', 'checkpointing', 'checkpoint_on_training', 'max_threads']
             sampler_kwargs = {key: self.config['inference'][key] for key in keys if key in sampler_opts}
 
+            # Add beta to likelihood kwargs
+            if 'beta' in self.config.get('inference', {}):
+                self.kwargs['beta'] = self.config['inference']['beta']
+            
             # Filtering
             logger.info(f"Passing the following kwargs: {sampler_kwargs}")
             model = setting_nessai.nessai_model(self.log_like, **self.kwargs)
@@ -138,12 +148,17 @@ class Method:
         """
         self.result = {}
         if self.sampler in ['NUTS']:
-            self.method.run(jax.random.PRNGKey(100), **self.kwargs)
+            if self.seed is not None:
+                logger.info(f"Running HMC with seed: {self.seed}")
+                self.method.run(jax.random.PRNGKey(self.seed), **self.kwargs)
+            else:
+                logger.info("Running HMC with default seed: 100")
+                self.method.run(jax.random.PRNGKey(100), **self.kwargs)
             self.posterior = self.method.get_samples()
             self.chain = np.column_stack([self.posterior[key] for key in self.posterior])
             self.result['chain'] = self.chain
-            self.plot_corner()
-            self.plot_autocorrelation()
+#            self.plot_corner()
+#            self.plot_autocorrelation()
 
             if 'beta' in self.config['inference']:
                 self.get_likelihood()
@@ -248,6 +263,13 @@ class BayesianInference:
         """
         Save the posterior samples to a file.
         """
+        # Get seed from config if available
+        self.seed = self.config['inference'].get('seed', None)
+        if self.seed is not None:
+            # Append before the .npz the seed value
+            base, ext = os.path.splitext(self.config['inference']["file_post"])
+            self.config['inference']["file_post"] = f"{base}.{self.seed}{ext}"
+        logger.info(f"Saving results to {self.config['inference']['file_post']}")
         np.savez(self.config['inference']["file_post"], posterior=self.result)
 
     def run(self):
