@@ -17,8 +17,10 @@ Usage:
 """
 
 from bahamas.psd_strain import psd_function as psd
+from bahamas.psd_strain import psd_galaxy as gal
 from bahamas.psd_response import response as resp
 from bahamas.method import gaps
+from bahamas.method import setting_hmc
 from bahamas.logger_config import logger
 
 import matplotlib.pylab as plt
@@ -172,19 +174,9 @@ class SignalProcessor:
             sys.exit()
         
         if 'galactic_DWD_time' in self.sources:
-            if 'chunk' not in self.config:
+            if 'chunk' not in self.config and 'gaps' not in self.config:
                 logger.error('Use chunked or gapped data with cyclo galactic sources')
                 sys.exit()
-
-        #if 'bulge_time' in self.sources:
-        #    if 'chunk' not in self.config:
-        #        logger.error('Use chunked or gapped data with cyclo bulge disk sources')
-        #        sys.exit()
-
-        #if 'disk_time' in self.sources:
-        #    if 'chunk' not in self.config:
-        #        logger.error('Use chunked or gapped data with cyclo bulge disk sources')
-        #        sys.exit()
 
         if 'gaps' in self.config:
             logger.info('Production of gapped data')
@@ -206,6 +198,22 @@ class SignalProcessor:
                 logger.info(f"Chunk {i+1}: start={self.start[i]}, end={self.end[i]}, T ={self.T2[i] - self.T1[i]}")
           
             self.TOBS = self.config['gaps']['sched_period']
+            
+            duty_cycle = np.sum(np.array(self.end) - np.array(self.start)) / self.T
+            logger.info(f'Duty cycle: {duty_cycle}')
+
+            if tg['unsched_gap'] > 0:                  
+                try:
+                    for item in self.sources:
+                        if item == 'galactic_DWD_time':
+                            for key in self.sources['galactic_DWD_time']:
+                                if key['name'] == 'Tobs':
+                                    logger.info('Updating Tobs for galactic_DWD_time')
+                                    logger.info(f"Previous Tobs for galactic_DWD_time: {key['injected']}")
+                                    key['injected'] = np.sum(np.array(self.end) - np.array(self.start))
+                                    logger.info(f"Updated Tobs for galactic_DWD_time: {key['injected']}")
+                except:
+                    logger.warning('No Tobs for galactic_DWD_time')
 
         elif 'chunk' in self.config:
             logger.info('Production of chunked data')
@@ -259,26 +267,32 @@ class SignalProcessor:
         Simulate data based on the configuration and sources.
         """
         f_av, response, data, responseAV, dataAV, count = [], [], [], [], [], []
+        N = self.TOBS // self.dt
+
+        # Conversion factor from PSD to Fourier coefficients
+        factor = (2 * self.dt / N)**0.5
+
         for i, freqs in enumerate(self.freq_tot):
             
             response_tdi = self.compute_response(freqs)
-    
+            
             data_chunk_tdi, data_chunk_tdi_av, response_tdi_av = [], [], []
             for ind_tdi in range(self.ntdi):
                 psd_tdi, _ = psd.model_psd(freqs, sources=self.sources, response=response_tdi[ind_tdi], injected=True, t1=self.T1[i], t2=self.T2[i], tdi=ind_tdi, gen2 = self.gen2)
                 _, _tdi = GP_freq(freqs, self.dt, psd=psd_tdi)
+                _tdi *= factor 
                 data_chunk_tdi.append(_tdi)
 
                 if self.config['mod'] == 'lin':
                     dof = self.N_tot[i] // self.nseg
-                    f, d_av_tdi, R_av_tdi = average_chunks(freqs, 2*(self.dt**2 / self.TOBS)*np.abs(_tdi)**2, response_tdi[ind_tdi], dof)      
+                    f, d_av_tdi, R_av_tdi = average_chunks(freqs, np.abs(_tdi)**2, response_tdi[ind_tdi], dof)      
                     data_chunk_tdi_av.append(d_av_tdi)
                     response_tdi_av.append(R_av_tdi)
                     if ind_tdi == 0:                  
                         count.append(dof*np.ones_like(f))
 
                 elif self.config['mod'] == 'log':
-                    f, d_av_tdi, R_av_tdi, c = average_log_chunks(freqs, 2*(self.dt**2 / self.TOBS)*np.abs(_tdi)**2, response_tdi[ind_tdi], self.config['nseg'])
+                    f, d_av_tdi, R_av_tdi, c = average_log_chunks(freqs, np.abs(_tdi)**2, response_tdi[ind_tdi], self.config['nseg'])
                     data_chunk_tdi_av.append(d_av_tdi)
                     response_tdi_av.append(R_av_tdi)
                     if ind_tdi == 0:
@@ -299,14 +313,15 @@ class SignalProcessor:
         self.dataAV, self.responseAV = dataAV, responseAV
         self.f_av = f_av
         self.count = count
-        
+
+
     def save_data(self):
         """
         Save the simulated data and responses to HDF5 files.
         """
         # Save raw data
         with h5py.File(self.file+'.h5', 'w') as f:
-            for i, (data_chunk, response_chunk, freq_chunk) in enumerate(zip(self.data, self.response, self.freq_tot)):
+            for i, (data_chunk, response_chunk, freq_chunk, count_chunk) in enumerate(zip(self.data, self.response, self.freq_tot, self.count)):
                 group = f.create_group(f'chunk_{i+1}')
                 group.create_dataset('data', data=np.array(data_chunk, dtype=np.complex128))
                 group.create_dataset('response', data=np.array(response_chunk, dtype=np.float64))
@@ -337,20 +352,22 @@ class SignalProcessor:
         logger.info("Plotting signals.")
 
         plt.figure(figsize=(8, 6))
-        self.freq_output = np.arange(1e-5, 0.029, 1 / self.T)
+        self.freq_output = np.arange(1e-4, 0.029, 1 / self.T)
         self.df = 1 / self.T
 
-
-        if all(k not in self.sources for k in ['galactic_DWD_time']):
-            self.RAA_output, self.REE_output = self.compute_response(self.freq_output)
+        
+        if all(k not in self.sources for k in ['galactic_DWD_time', 'galactic_DWD_num']):
+            self.RAA_output, self.REE_output = resp.get_response(self.freq_output, gen2 = self.gen2, tdi = 'AE')
             psd_totA, self.psdA_output = psd.model_psd(self.freq_output, sources=self.sources, response=self.RAA_output, injected=True, gen2 = self.gen2)
             psd_totE, self.psdE_output = psd.model_psd(self.freq_output, sources=self.sources, response=self.REE_output, injected=True, gen2 = self.gen2)
-            for i, name in enumerate(self.sources.keys()):
-                plt.loglog(self.freq_output, self.psdA_output[i], label=name)
-
+            
+            for name in self.sources.keys():
+                if name != 'egp':
+                    plt.loglog(self.freq_output, self.psdA_output[name], label=name)
 
         for i in range(len(self.T1)):
             plt.loglog(self.f_av[i], self.dataAV[i][0], alpha=0.3, color=color[i], linestyle='--', label=f'chunk {i+1}')
+
         plt.xlabel("Frequency")
         plt.xlim(1e-4, 0.029)
         plt.ylim(10**-48, 10**-38.5)
@@ -377,6 +394,10 @@ class SignalProcessor:
                 logger.info(f'Chunk {j+1} start: {self.T1[j]}, end: {self.T2[j]}')
                 plt.plot(np.linspace(self.T1[j], self.T2[j], len(ift))[:-1], ift[:-1], rasterized=True, color='teal', alpha=0.3)
             plt.savefig(f'{name_folder}mod_gal.png', bbox_inches='tight')
+        
+        if 'galactic_DWD_num' in self.sources:
+            logger.info('Plotting sky distribution of galactic DWD sources')
+            gal.plot_sky_distribution(self.sources, self.config['folder_plot'])
 
     def SNR2(self, Sh, Sn):
         """
@@ -395,15 +416,15 @@ class SignalProcessor:
         """
         Compute and log the Signal-to-Noise Ratio (SNR) for each source.
         """
-        if all(k not in self.sources for k in ['galactic_DWD_time', 'disk_time', 'bulge_time']):
-            for i, name in enumerate(self.sources.keys()):
+        if all(k not in self.sources for k in ['galactic_DWD_time', 'galactic_DWD_num']):
+            for name in self.sources.keys():
                 if name == 'instr_noise':
-                    SnA, SnE = self.psdA_output[i], self.psdE_output[i]
+                    SnA, SnE = self.psdA_output[name], self.psdE_output[name]
 
-            for i, name in enumerate(self.sources.keys()):
-                if name != 'instr_noise':
-                    SNRA = self.SNR2(Sh=self.psdA_output[i], Sn=SnA)
-                    SNRE = self.SNR2(Sh=self.psdE_output[i], Sn=SnE)
+            for name in self.sources.keys():
+                if name != 'instr_noise'  and name != 'egp':
+                    SNRA = self.SNR2(Sh=self.psdA_output[name], Sn=SnA)
+                    SNRE = self.SNR2(Sh=self.psdE_output[name], Sn=SnE)
                     snr = np.sqrt(SNRA + SNRE)
                     logger.info(f'SNR of {name}: {round(snr)}')
 
@@ -497,5 +518,5 @@ def average_log_chunks(freqs, data, response, num_bins=50):
             d_avg.append(np.mean(data[mask]))
             r_avg.append(np.mean(response[mask]))
             count.append(np.sum(mask))
-
+            
     return np.array(f_avg), np.array(d_avg), np.array(r_avg), np.array(count)

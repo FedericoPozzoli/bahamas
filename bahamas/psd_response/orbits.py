@@ -18,6 +18,7 @@ twoPiPerYear= 1.99106488756578923121e-7
 year = 2*np.pi/twoPiPerYear
 astroUnit= 499.00478383615641191347
 sqrt_3 = 1.73205080756887729353
+clight = 299792458.0
 
 class SpacecraftOrbit():
     """
@@ -132,36 +133,33 @@ class SpacecraftOrbit():
         return self.SC
     
 
-    def link_versor(self,t=0,link=1):
+    def link_versor(self, t=0, link=1):
         """
         Compute the versor of the link between two spacecraft.
+        
         Args:
             t (float): Time in seconds.
-            link (int): Link number (-1, -2, -3 for opposite direction).
+            link (int): Link number (1,2,3) or opposite direction (-1,-2,-3).
+            
         Returns:
-            tuple: (versor, distance)
+            tuple: (versor, distance in light-seconds)
         """
-        # link = 1,2,3 for the three links, -1,-2,-3 for the opposite direction
         orbits = self.SC_positions(t)
-        if link == 1:
-            rhat = (orbits[1]-orbits[2])
-
-        if link == 2:
-            rhat = (orbits[2]-orbits[0])
-
-        if link == 3:
-            rhat = (orbits[0]-orbits[1])
         
-        if link == -1:
-            rhat = -(orbits[1]-orbits[2])
+        link_map = {
+            1: orbits[1] - orbits[2],
+            2: orbits[2] - orbits[0],
+            3: orbits[0] - orbits[1],
+            -1: orbits[2] - orbits[1],
+            -2: orbits[0] - orbits[2],
+            -3: orbits[1] - orbits[0]
+        }
+        
+        rhat = link_map[link]
+        distance = np.linalg.norm(rhat)
+        
+        return rhat/distance, distance
 
-        if link == -2:
-            rhat = -(orbits[2]-orbits[0])
-
-        if link == -3:
-            rhat = -(orbits[0]-orbits[1])
-
-        return rhat/np.linalg.norm(rhat), np.linalg.norm(rhat)
     
 
 if __name__ == "__main__":
@@ -177,5 +175,16 @@ if __name__ == "__main__":
 
     for i, t in enumerate(times):
         orbits[i,:,:] = mySC.SC_positions(t)
+    
+    # Print the first 5 positions
+    print("First 5 spacecraft positions (in AU):")
+    print(orbits[:5,:,:]/astroUnit)
+    # Compute and print armlengths at t=0
+    arms = mySC.compute_all_armlengths(0)
+    print("Armlengths at t=0 (in light-seconds):")
+    print(arms)
+    # Compute and print armlength derivatives at t=0
+    derivatives = mySC.compute_armlength_derivatives(0)
+
 
     

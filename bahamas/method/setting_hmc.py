@@ -27,28 +27,37 @@ from jax import lax, random, vmap
 from jax.scipy.special import logsumexp
 
 
-####################################################################################################
-
-# Prior Sampling
 def prior_sample(sources):
     """
     Sample parameters from prior distributions for multiple sources.
-
+    
     Parameters:
     - sources (dict): Dictionary of sources and their parameter configurations.
-
+    
     Returns:
     - dict: Dictionary of sampled parameters for each source.
     """
     samples = {}
-    for source_name, param_list in sources.items():
-
-        source_samples = {
-                param["name"]: numpyro.sample(f"{source_name}_{param['name']}", dist.Uniform(*param["bounds"]))
-                if param["bounds"] else param["injected"]
-                for param in param_list
-            }
+    
+    # Second pass: process all other sources
+    for source_name, param_list in sources.items():        
+        source_samples = {}
+        
+        # Sample regular source parameters
+        for param in param_list:
+            bounds = param.get("bounds")
+            injected = param.get("injected")
+            
+            if bounds:
+                source_samples[param["name"]] = numpyro.sample(
+                    f"{source_name}_{param['name']}",
+                    dist.Uniform(bounds[0], bounds[1])
+                )
+            else:
+                source_samples[param["name"]] = injected
+        
         samples[source_name] = source_samples
+        
     return samples
 
 # Likelihood Functions
@@ -72,9 +81,8 @@ def whittle_lik(data, freqs, response, sources, dt, t1, t2, dof, gen2):
     log_likelihood = 0
     for j, segment in enumerate(data):
         for i, tdi in enumerate(segment):
-            f, n = jnp.array(freqs[j]), dof[j]
+            f = jnp.array(freqs[j])
             psd_model = psd.model_psd(freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2)
-            psd_model = (n / dt) * psd_model
             log_likelihood += -0.5 * jnp.sum((jnp.abs(tdi) ** 2) / psd_model) - 0.5 * len(f) * jnp.log(2 * jnp.pi) - 0.5 * jnp.sum(jnp.log(psd_model))
     numpyro.factor("log_likelihood", log_likelihood)
 
@@ -95,12 +103,14 @@ def gamma_lik(data, freqs, response, sources, dt, t1, t2, dof, gen2):
     - None: Adds the log-likelihood factor to the NumPyro model.
     """
     sample = prior_sample(sources)
+
     log_likelihood = 0
     for j, segment in enumerate(data):
         for i, tdi in enumerate(segment):
             f = jnp.array(freqs[j])
-            psd_model = psd.model_psd(freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2) / dof[j]
-            log_likelihood += -jnp.sum(jsc.special.gammaln(dof[j])) - jnp.sum(dof[j] * jnp.log(psd_model)) + jnp.sum((dof[j] - 1) * jnp.log(tdi)) - jnp.sum(tdi / psd_model)
+            psd_model = psd.model_psd(freqs=f, response=response[j][i], sources=sample, t1=t1[j], t2=t2[j], tdi=i, gen2 = gen2) 
+            log_likelihood += -jnp.sum(jsc.special.gammaln(0.5 * dof[j])) - jnp.sum(0.5 * dof[j] * jnp.log(psd_model)) + jnp.sum((0.5 * dof[j] - 1) * jnp.log(tdi)) - jnp.sum(0.5 * dof[j] * tdi / psd_model)
+
     numpyro.factor("log_likelihood", log_likelihood)
 
 def beta_scaled_log_likelihood(log_like_fn, beta):

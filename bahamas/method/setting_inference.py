@@ -18,6 +18,7 @@ Dependencies:
 """
 from bahamas.method import setting_hmc
 from bahamas.method import setting_nessai 
+from bahamas.method import setting_eryn
 from bahamas.logger_config import logger
 
 import numpy as np
@@ -131,8 +132,7 @@ class InferenceMethod:
             
         else:
             self.TOBS = config['T']
-        
-        self.N = self.T // self.dt
+
 
 
     def select_method(self):
@@ -142,9 +142,6 @@ class InferenceMethod:
         Returns:
             tuple: A tuple containing:
                 - log_like (callable): The selected likelihood function.
-                - t1 (array): Start times for each segment.
-                - t2 (array): End times for each segment.
-                - dof (array): Degrees of freedom for each segment.
         """
         mode = self.config['inference']['likelihood']
         sampler = self.config['inference']['sampler']
@@ -156,7 +153,9 @@ class InferenceMethod:
                     log_like = setting_hmc.beta_scaled_log_likelihood(log_like, beta=self.config['inference']['beta'])
             elif sampler in ['nested']:
                 log_like = setting_nessai.whittle_lik
-            dof = self._calculate_dof()
+            elif sampler in ['eryn']:
+                log_like = setting_eryn.whittle_lik
+
 
         elif mode == 'Gamma':
             if sampler in ['NUTS']:
@@ -165,37 +164,13 @@ class InferenceMethod:
                     log_like = setting_hmc.beta_scaled_log_likelihood(log_like, beta=self.config['inference']['beta'])
             elif sampler in ['nested']:
                 log_like = setting_nessai.gamma_lik
-            dof = self._calculate_dof(gamma=True)
+            elif sampler in ['eryn']:
+                log_like = setting_eryn.gamma_lik
 
         else:
             raise ValueError(f"Unknown Likelihood: {mode}")
 
-        return log_like, dof
-
-
-    def _calculate_dof(self, gamma=False):
-        """
-        Calculate the degrees of freedom for each segment.
-
-        Args:
-            gamma (bool): Whether to calculate DOF for the Gamma likelihood.
-
-        Returns:
-            tuple: A tuple containing:
-                - t1 (array): Start times for each segment.
-                - t2 (array): End times for each segment.
-                - dof (array): Degrees of freedom for each segment.
-        """
-        if gamma:
-            dof = np.array(self.count) 
-        else:
-            if any(key in self.config for key in ['gaps', 'chunk']):
-                dof = (self.t2 - self.t1) / self.dt // 2
-            else:
-                dof = np.array([self.T / self.dt // 2])
-            
-        return  dof
-
+        return log_like
 
 def set(config, sources):
     """
@@ -220,8 +195,10 @@ def set(config, sources):
     # Load Data
     data, response, freqs, count, gen2, t1, t2 = read_data(config=config)
 
+    count = np.array(count)
+
     # Setup Inference Method
     infer = InferenceMethod(config, t1, t2, count)
-    log_like, dof = infer.select_method()
+    log_like = infer.select_method()
 
-    return log_like, data, freqs, response, config['dt'], t1, t2, dof, gen2
+    return log_like, data, freqs, response, config['dt'], t1, t2, count, gen2
