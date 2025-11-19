@@ -35,7 +35,10 @@ dependencies = [
   "h5py",
   "pyyaml",
   "nessai",
-  "healpy"
+  "healpy",
+  "scikit-image",
+  "corner",
+  "eryn"
 ]
 
 [project.urls]
@@ -47,6 +50,7 @@ Issues = "https://github.com/FedericoPozzoli/bahamas/issues"
 bahamas-inference = "bahamas.utilities.run_pe:main"
 bahamas-data = "bahamas.utilities.run_data:main"
 bahamas-input = "bahamas.utilities.run_input:main"
+bahamas-bpls = "bahamas.utilities.run_bpls:main"
 
 [tool.setuptools]
 package-dir = {"" = "."}
