@@ -14,6 +14,8 @@ if jnp is None:
     from bahamas.backend_context import initialize_backend
     initialize_backend(use_jax=True)
     jnp, jit, lax = get_backend_components()
+    #print("Initialized JAX backend in psd_function.py")
+
 
 if lax is not None:
     import jax

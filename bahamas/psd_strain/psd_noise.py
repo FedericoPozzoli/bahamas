@@ -8,6 +8,7 @@ from bahamas.backend_context import get_backend_components
 jnp, jit, lax = get_backend_components()
 
 
+
 # Check if lax is available
 if jnp is None:
     #default to jax numpy

@@ -7,6 +7,7 @@ Inference methods for BAHAMAS:
 """
 
 from .gaps import *
+from .setting_data import *
 from .setting_eryn import *
 from .setting_hmc import *
 from .setting_nessai import *
