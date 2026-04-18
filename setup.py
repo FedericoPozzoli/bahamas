@@ -32,6 +32,7 @@ setup(
         'bahamas_inference=bahamas.utilities.run_pe:main',
         'bahamas_data=bahamas.utilities.run_data:main',
         'bahamas_input=bahamas.utilities.run_input:main',
+        'bahamas_bpls=bahamas.utilities.run_bpls:main',
     ],
 },
 )

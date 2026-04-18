@@ -12,6 +12,7 @@ from bahamas.backend_context import get_backend_components
 # Load backend components after backend initialization
 jnp, jit, lax = get_backend_components()
 
+
 if jnp is None:
     import numpy as jnp
 
@@ -31,7 +32,8 @@ def average_envelopes_gaussian(SinEclipticLatitude, EclipticLongitude, Sigma1, S
     :param Sigma2: squared of Standard deviation along the second principal axis
     :param sinPsi: sine of the angle between the two principal axes
     :param LISA_Orbital_Freq: orbital frequency of LISA barycenter (1 / year)
-    :param t: time
+    :param t1: initial time
+    :param t2: final time
     :param alpha0: initial phase of LISA barycenter
     :param beta0: initial rotation of satellites in detector plane
     :return: A(t), E(t)

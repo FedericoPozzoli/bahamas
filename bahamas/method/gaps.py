@@ -4,7 +4,7 @@ It provides a function to create gaps in observation data, considering scheduled
 """
 import numpy as np
 
-def generate_gaps(T_obs, scheduled_gap=7*3600, scheduled_period=14*86400, unscheduled_gap=3*86400, exp_scale=10*86400, merge_threshold=1*86400, duty_cycle=0.75):
+def generate_gaps(T_obs, scheduled_gap=7*3600, scheduled_period=14*86400, unscheduled_gap=0., exp_scale=10*86400, merge_threshold=1*86400, duty_cycle=0.75):
     """
     Generate observation gaps based on scheduled and unscheduled constraints.
     Args:
@@ -21,6 +21,7 @@ def generate_gaps(T_obs, scheduled_gap=7*3600, scheduled_period=14*86400, unsche
     # Generate scheduled gaps
 
     tot = scheduled_period + scheduled_gap
+  
     seg = np.arange(0, T_obs , tot)
     scheduled_gaps = []
     for i in seg:
@@ -72,6 +73,7 @@ def generate_gaps(T_obs, scheduled_gap=7*3600, scheduled_period=14*86400, unsche
             data_start = end
             data_end = end + scheduled_period 
             data_seg.append((data_start, data_end))
+            
     
     data_seg = np.asarray(data_seg)
   
