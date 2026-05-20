@@ -106,6 +106,14 @@ def model_psd(freqs, sources, response, injected=False, tdi=0, **kwargs):
             if injected:
                 true_psd['dynamical_friction'] = response * base
 
+        elif source_name == 'eccentric_vacuum':
+            base = signal.Omega_ecc_vac(freqs, source_params)
+            if has_egp:
+                base = egp.egp(freqs, base, source_params)
+            psd += response * base
+            if injected:
+                true_psd['eccentric_vacuum'] = response * base
+
 
         elif source_name == 'extra_DWD':
             base = signal.Omega_extra_foreground(freqs, source_params)
