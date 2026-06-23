@@ -36,6 +36,8 @@ dependencies = [
   "pyyaml",
   "nessai",
   "healpy",
+  "ruamel.yaml",
+  "corner"
   "scikit-image",
   "corner",
   "eryn"
